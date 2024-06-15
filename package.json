@@ -1,0 +1,11 @@
+{
+  "prettier": "@buildigo/prettier-config",
+  "scripts": {
+    "format": "prettier \"**/*.+(js|ts|tsx|html|css|json)\" --write"
+  },
+  "devDependencies": {
+    "@buildigo/prettier-config": "^2.0.0-beta1",
+    "prettier": "^3.3.2",
+    "prettier-plugin-tailwindcss": "^0.6.4"
+  }
+}
