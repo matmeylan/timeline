@@ -1,9 +1,11 @@
-# IntelliJ project files
+# IDE
 .idea
 *.iml
 out
 gen
+.vscode
 
+# npm
 node_modules
 
 # Fresh
