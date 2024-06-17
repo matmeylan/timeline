@@ -5,7 +5,7 @@ out
 gen
 .vscode
 
-# npm
+# npm
 node_modules
 
 # Fresh
