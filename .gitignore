@@ -8,6 +8,11 @@ gen
 # npm
 node_modules
 
+# Config
+.env
+
 # Fresh
 _fresh
 
+# Prisma
+__generated__/prisma

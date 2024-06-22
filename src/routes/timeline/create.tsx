@@ -1,5 +1,7 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
-import {z, ZodError} from 'zod'
+import {z, ZodError} from '$zod'
+import {TimelineService} from 'core/domain/timeline.service.ts'
+import {database} from 'core/db/client.ts'
 
 export const handler: Handlers = {
   async POST(req, ctx) {
@@ -14,11 +16,11 @@ export const handler: Handlers = {
       return ctx.render({error: result.error, form: {title}}, {status: 400})
     }
 
-    const newTimeline = result.data
-    console.log('got timeline', {newTimeline})
+    const timelineService = new TimelineService(database)
+    const timeline = await timelineService.create({title: result.data.title})
 
     const headers = new Headers()
-    headers.set('location', `/timeline/${newTimeline.title}`)
+    headers.set('location', `/timeline/${timeline.slug}`)
     return new Response(null, {status: 303, headers})
   },
 }
