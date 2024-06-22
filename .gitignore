@@ -11,8 +11,9 @@ node_modules
 # Config
 .env
 
+# Local DB
+data
+
 # Fresh
 _fresh
 
-# Prisma
-__generated__/prisma

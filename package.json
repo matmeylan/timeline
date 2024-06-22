@@ -6,10 +6,6 @@
   "devDependencies": {
     "@buildigo/prettier-config": "^2.0.0-beta1",
     "prettier": "^3.3.2",
-    "prettier-plugin-tailwindcss": "^0.6.4",
-    "prisma": "^5.15.1"
-  },
-  "dependencies": {
-    "@prisma/client": "^5.15.1"
+    "prettier-plugin-tailwindcss": "^0.6.4"
   }
 }
