@@ -1,5 +1,8 @@
+import {ZodError} from '$zod'
+
 export interface CreateTimeline {
   title: string
+  slug?: string
 }
 
 export interface Timeline {
@@ -9,8 +12,22 @@ export interface Timeline {
   createdAt: number
 }
 
-export class TimelineAlreadyExistsError extends Error {
-  constructor(slug: string) {
-    super(`Timeline with slug ${slug} already exists`)
+export interface Zodable {
+  toZod(): ZodError
+}
+
+export class SlugAlreadyUsed extends Error implements Zodable {
+  constructor(readonly slug: string) {
+    super(`Slug "${slug}" is already used`)
+  }
+
+  toZod() {
+    return new ZodError([
+      {
+        code: 'custom',
+        path: ['slug'],
+        message: this.message,
+      },
+    ])
   }
 }
