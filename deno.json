@@ -23,7 +23,6 @@
     "$std/": "https://deno.land/std@0.216.0/",
     "$zod": "https://deno.land/x/zod@v3.23.8/mod.ts",
     "$slug": "https://deno.land/x/slug@v1.1.0/mod.ts",
-    "core/": "./src/core/"
   },
   "compilerOptions": { "jsx": "react-jsx", "jsxImportSource": "preact" },
   "nodeModulesDir": true
