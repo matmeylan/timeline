@@ -1,7 +1,7 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
 import {z, ZodError} from '$zod'
-import {TimelineService} from 'core/domain/timeline.ts'
-import {SlugAlreadyUsed} from '../core/domain/timeline.types.ts'
+import {JournalService} from '../core/domain/journal.ts'
+import {SlugAlreadyUsed} from '../core/domain/journal.types.ts'
 
 export const handler: Handlers = {
   async POST(req, ctx) {
@@ -13,17 +13,17 @@ export const handler: Handlers = {
       title,
       slug,
     }
-    const result = CreateTimelineSchema.safeParse(form)
+    const result = CreateJournalSchema.safeParse(form)
 
     if (!result.success) {
       return ctx.render({error: result.error, form}, {status: 400})
     }
 
-    const timelineService = await TimelineService()
+    const service = await JournalService()
     try {
-      const timeline = await timelineService.createTimeline(result.data)
+      const journal = await service.createJournal(result.data)
       const headers = new Headers()
-      headers.set('location', `/${timeline.slug}`)
+      headers.set('location', `/${journal.slug}`)
       return new Response(null, {status: 303, headers})
     } catch (err) {
       if (err instanceof SlugAlreadyUsed) {
@@ -44,13 +44,13 @@ export const handler: Handlers = {
   },
 }
 
-export default function CreateTimeline(props: PageProps<CreateTimelineState>) {
+export default function CreateJournal(props: PageProps<CreateJournalState>) {
   const {error, form} = props.data || {}
   const errors = error?.flatten()
   const slugHint = "When left empty, we'll generate a slug for you"
   return (
     <>
-      <h1 class="text-4xl font-bold">New timeline</h1>
+      <h1 class="text-4xl font-bold">New journal</h1>
       <form method="post" class="mt-4 inline-flex flex-col gap-1">
         <label for="title">Title</label>
         <input type="title" name="title" value={form?.title} required />
@@ -65,9 +65,9 @@ export default function CreateTimeline(props: PageProps<CreateTimelineState>) {
   )
 }
 
-interface CreateTimelineState {
+interface CreateJournalState {
   form?: Form
-  error?: CreateTimelineError
+  error?: CreateJournalError
 }
 
 interface Form {
@@ -75,9 +75,9 @@ interface Form {
   slug?: string
 }
 
-const CreateTimelineSchema = z.object({
+const CreateJournalSchema = z.object({
   title: z.string().min(2, {message: 'Please provide a title of at least 2 characters'}),
   slug: z.string().optional(),
 })
-type CreateTimelineInput = z.infer<typeof CreateTimelineSchema>
-type CreateTimelineError = ZodError<CreateTimelineInput>
+type CreateJournalInput = z.infer<typeof CreateJournalSchema>
+type CreateJournalError = ZodError<CreateJournalInput>

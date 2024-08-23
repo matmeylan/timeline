@@ -1,23 +1,23 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
-import {TimelineService} from 'core/domain/timeline.ts'
-import {Timeline} from 'core/domain/timeline.types.ts'
+import {JournalService} from '../core/domain/journal.ts'
+import {Journal} from '../core/domain/journal.types.ts'
 
 export const handler: Handlers = {
   async GET(req, ctx) {
-    const timelineService = await TimelineService()
+    const service = await JournalService()
 
-    const timelines: Timeline[] = []
-    for await (const timeline of timelineService.listTimelines()) {
-      timelines.push(timeline.value)
+    const journals: Journal[] = []
+    for await (const j of service.listJournals()) {
+      journals.push(j.value)
     }
 
     return ctx.render({
-      timelines,
+      journals,
     })
   },
 }
 
-export default function Home(props: PageProps<TimelineIndexState>) {
+export default function Home(props: PageProps<JournalIndexState>) {
   return (
     <main class="flex flex-col items-center justify-center">
       <img
@@ -27,26 +27,26 @@ export default function Home(props: PageProps<TimelineIndexState>) {
         height="128"
         alt="the Fresh logo: a sliced lemon dripping with juice"
       />
-      <h1 class="text-4xl font-bold">Welcome to your Timelines</h1>
+      <h1 class="text-4xl font-bold">Welcome to your Journals</h1>
       <menu class="mt-4">
         <li>
-          <a href="/create">Create new timeline</a>
+          <a href="/CreateJournal">Create new journal</a>
         </li>
       </menu>
-      <h2 class="mt-2 text-3xl font-bold">All timelines</h2>
-      <TimelineList timelines={props.data.timelines} />
+      <h2 class="mt-2 text-3xl font-bold">All journals</h2>
+      <JournalList journals={props.data.journals} />
     </main>
   )
 }
 
-function TimelineList(props: {timelines: Timeline[]}) {
-  const {timelines} = props
-  if (timelines.length === 0) {
-    return <p className="italic">No timelines yet</p>
+function JournalList(props: {journals: Journal[]}) {
+  const {journals} = props
+  if (journals.length === 0) {
+    return <p className="italic">No journal yet</p>
   }
   return (
     <ul>
-      {timelines.map(t => (
+      {journals.map(t => (
         <li>
           <a href={t.slug}>{t.title}</a>
         </li>
@@ -55,6 +55,6 @@ function TimelineList(props: {timelines: Timeline[]}) {
   )
 }
 
-interface TimelineIndexState {
-  timelines: Timeline[]
+interface JournalIndexState {
+  journals: Journal[]
 }

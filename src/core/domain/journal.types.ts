@@ -1,11 +1,11 @@
 import {ZodError} from '$zod'
 
-export interface CreateTimeline {
+export interface CreateJournal {
   title: string
   slug?: string
 }
 
-export interface Timeline {
+export interface Journal {
   id: string
   slug: string
   title: string
