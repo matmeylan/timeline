@@ -17,3 +17,7 @@ export class SqliteClient {
     this._db?.close()
   }
 }
+
+export enum SQLITE_ERROR {
+  SQLITE_CONSTRAINT_UNIQUE = 2067,
+}

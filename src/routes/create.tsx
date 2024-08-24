@@ -19,7 +19,7 @@ export const handler: Handlers = {
       return ctx.render({error: result.error, form}, {status: 400})
     }
 
-    const service = await JournalService()
+    const service = new JournalService()
     try {
       const journal = await service.createJournal(result.data)
       const headers = new Headers()

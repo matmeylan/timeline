@@ -4,13 +4,8 @@ import {Journal} from '../core/domain/journal.types.ts'
 
 export const handler: Handlers = {
   async GET(req, ctx) {
-    const service = await JournalService()
-
-    const journals: Journal[] = []
-    for await (const j of service.listJournals()) {
-      journals.push(j.value)
-    }
-
+    const service = new JournalService()
+    const journals: Journal[] = service.listJournals()
     return ctx.render({
       journals,
     })
@@ -30,7 +25,7 @@ export default function Home(props: PageProps<JournalIndexState>) {
       <h1 class="text-4xl font-bold">Welcome to your Journals</h1>
       <menu class="mt-4">
         <li>
-          <a href="/CreateJournal">Create new journal</a>
+          <a href="/create">Create new journal</a>
         </li>
       </menu>
       <h2 class="mt-2 text-3xl font-bold">All journals</h2>

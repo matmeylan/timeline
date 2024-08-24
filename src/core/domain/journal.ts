@@ -1,11 +1,15 @@
 import {slug as generateSlug} from '$slug'
-import {CreateJournal, SlugAlreadyUsed, Journal} from './journal.types.ts'
-import {openKv} from '../database/kv.ts'
+import {CreateJournal, Journal, SlugAlreadyUsed} from './journal.types.ts'
+import {SQLITE_ERROR, SqliteClient} from '../database/sqlite.ts'
+import {SqliteError} from '@db/sqlite'
 
+// reserved slugs at the same URL path level
 const reservedSlugs = ['create']
 
-export function createJournal(kv: Deno.Kv): (input: CreateJournal) => Promise<Journal> {
-  return async (input: CreateJournal) => {
+export class JournalService {
+  constructor(private readonly client: SqliteClient = new SqliteClient()) {}
+
+  createJournal(input: CreateJournal): Journal {
     const slug = generateSlug(input.slug || input.title)
     if (reservedSlugs.includes(slug)) {
       throw new SlugAlreadyUsed(slug)
@@ -15,35 +19,29 @@ export function createJournal(kv: Deno.Kv): (input: CreateJournal) => Promise<Jo
       id: crypto.randomUUID(),
       slug,
       title: input.title,
-      createdAt: Date.now(),
+      createdAt: new Date(),
     }
 
-    const primaryKey = ['journal', 'byDate', journal.createdAt, journal.slug]
-    const bySlug = ['journal', 'bySlug', journal.slug]
+    const stmt = this.client.db.prepare(
+      `INSERT INTO journal(id, slug, title, created_at) values (:id, :slug, :title, :createdAt)`,
+    )
 
-    const res = await kv
-      .atomic()
-      .check({key: primaryKey, versionstamp: null})
-      .check({key: bySlug, versionstamp: null})
-      .set(primaryKey, journal)
-      .set(bySlug, journal)
-      .commit()
-
-    if (!res.ok) {
-      throw new SlugAlreadyUsed(slug)
+    try {
+      stmt.run(journal)
+    } catch (err) {
+      console.log('error', err)
+      console.log('SqliteError', err instanceof SqliteError)
+      if (err instanceof SqliteError && err.code === SQLITE_ERROR.SQLITE_CONSTRAINT_UNIQUE) {
+        throw new SlugAlreadyUsed(slug)
+      }
+      throw err
     }
+
     return journal
   }
-}
 
-export function listJournal(kv: Deno.Kv): () => Deno.KvListIterator<Journal> {
-  return () => kv.list({prefix: ['journal', 'byDate']}, {reverse: true})
-}
-
-export async function JournalService() {
-  const kv = await openKv()
-  return {
-    createJournal: createJournal(kv),
-    listJournals: listJournal(kv),
+  listJournals(): Journal[] {
+    const stmt = this.client.db.prepare(`SELECT * from journal`)
+    return stmt.all<Journal>()
   }
 }

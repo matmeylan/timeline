@@ -1,15 +1,16 @@
 import {ZodError} from '$zod'
+import {Model} from '../database/model.types.ts'
 
 export interface CreateJournal {
   title: string
   slug?: string
 }
 
-export interface Journal {
+export interface Journal extends Model {
   id: string
   slug: string
   title: string
-  createdAt: number
+  createdAt: Date
 }
 
 export interface Zodable {
