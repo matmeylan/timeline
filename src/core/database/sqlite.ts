@@ -11,13 +11,18 @@ export class SqliteClient {
     return this._db
   }
 
-  constructor(readonly path: string = Deno.env.get('DATABASE_PATH')!) {}
+  constructor(readonly path: string = Deno.env.get('DATABASE_PATH')!) {
+    if (!this.path) {
+      throw new Error('No path specified for DB')
+    }
+  }
 
   close() {
     this._db?.close()
   }
 }
 
-export enum SQLITE_ERROR {
-  SQLITE_CONSTRAINT_UNIQUE = 2067,
+// Not great, but it looks like it's hard to do better as it's unwrapped by sqlite3 ...
+export function isUniqueConstraintError(err: unknown): boolean {
+  return err instanceof Error && err.message.includes('UNIQUE constraint failed')
 }

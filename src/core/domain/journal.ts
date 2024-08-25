@@ -1,7 +1,6 @@
 import {slug as generateSlug} from '$slug'
 import {CreateJournal, Journal, SlugAlreadyUsed} from './journal.types.ts'
-import {SQLITE_ERROR, SqliteClient} from '../database/sqlite.ts'
-import {SqliteError} from '@db/sqlite'
+import {isUniqueConstraintError, SqliteClient} from '../database/sqlite.ts'
 
 // reserved slugs at the same URL path level
 const reservedSlugs = ['create']
@@ -29,9 +28,7 @@ export class JournalService {
     try {
       stmt.run(journal)
     } catch (err) {
-      console.log('error', err)
-      console.log('SqliteError', err instanceof SqliteError)
-      if (err instanceof SqliteError && err.code === SQLITE_ERROR.SQLITE_CONSTRAINT_UNIQUE) {
+      if (isUniqueConstraintError(err)) {
         throw new SlugAlreadyUsed(slug)
       }
       throw err
@@ -41,7 +38,7 @@ export class JournalService {
   }
 
   listJournals(): Journal[] {
-    const stmt = this.client.db.prepare(`SELECT * from journal`)
+    const stmt = this.client.db.prepare(`SELECT * FROM journal`)
     return stmt.all<Journal>()
   }
 }
