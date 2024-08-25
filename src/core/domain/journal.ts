@@ -1,5 +1,5 @@
 import {slug as generateSlug} from '$slug'
-import {CreateJournal, Journal, SlugAlreadyUsed} from './journal.types.ts'
+import {CreateJournal, Journal, NotFoundError, SlugAlreadyUsed} from './journal.types.ts'
 import {isUniqueConstraintError, SqliteClient} from '../database/sqlite.ts'
 
 // reserved slugs at the same URL path level
@@ -22,7 +22,7 @@ export class JournalService {
     }
 
     const stmt = this.client.db.prepare(
-      `INSERT INTO journal(id, slug, title, created_at) values (:id, :slug, :title, :createdAt)`,
+      `INSERT INTO journal(id, slug, title, createdAt) values (:id, :slug, :title, :createdAt)`,
     )
 
     try {
@@ -40,5 +40,14 @@ export class JournalService {
   listJournals(): Journal[] {
     const stmt = this.client.db.prepare(`SELECT * FROM journal`)
     return stmt.all<Journal>()
+  }
+
+  getJournalBySlug(slug: string): Journal {
+    const stmt = this.client.db.prepare(`SELECT * FROM journal where slug = :slug`)
+    const journal = stmt.get<Journal>({slug})
+    if (!journal) {
+      throw new NotFoundError(`Journal ${slug} was not found`)
+    }
+    return journal
   }
 }

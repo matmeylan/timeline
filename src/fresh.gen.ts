@@ -2,21 +2,25 @@
 // This file SHOULD be checked into source version control.
 // This file is automatically updated during development when running `dev.ts`.
 
+import * as $_slug_ from "./routes/[slug].tsx";
+import * as $_slug_write from "./routes/[slug]/write.tsx";
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $_layout from "./routes/_layout.tsx";
-import * as $create from "./routes/create.tsx";
 import * as $index from "./routes/index.tsx";
+import * as $start from "./routes/start.tsx";
 
 import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
+    "./routes/[slug].tsx": $_slug_,
+    "./routes/[slug]/write.tsx": $_slug_write,
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
     "./routes/_layout.tsx": $_layout,
-    "./routes/create.tsx": $create,
     "./routes/index.tsx": $index,
+    "./routes/start.tsx": $start,
   },
   islands: {},
   baseUrl: import.meta.url,

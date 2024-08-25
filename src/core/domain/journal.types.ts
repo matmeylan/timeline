@@ -10,7 +10,7 @@ export interface Journal extends Model {
   id: string
   slug: string
   title: string
-  createdAt: Date
+  createdAt: Date | string // ISO-8601
 }
 
 export interface Zodable {
@@ -32,3 +32,5 @@ export class SlugAlreadyUsed extends Error implements Zodable {
     ])
   }
 }
+
+export class NotFoundError extends Error {}

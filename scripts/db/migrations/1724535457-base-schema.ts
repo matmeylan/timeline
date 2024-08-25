@@ -10,7 +10,7 @@ export class BaseSchema1724535457 implements Migration {
             id         TEXT PRIMARY KEY,
             slug       TEXT UNIQUE NOT NULL,
             title      TEXT        NOT NULL,
-            created_at TEXT        NOT NULL
+            createdAt  TEXT        NOT NULL
         );
   `)
   }

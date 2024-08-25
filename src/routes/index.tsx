@@ -3,7 +3,7 @@ import {JournalService} from '../core/domain/journal.ts'
 import {Journal} from '../core/domain/journal.types.ts'
 
 export const handler: Handlers = {
-  async GET(req, ctx) {
+  GET(req, ctx) {
     const service = new JournalService()
     const journals: Journal[] = service.listJournals()
     return ctx.render({
@@ -25,16 +25,16 @@ export default function Home(props: PageProps<JournalIndexState>) {
       <h1 class="text-4xl font-bold">Welcome to your Journals</h1>
       <menu class="mt-4">
         <li>
-          <a href="/create">Create new journal</a>
+          <a href="/start">Start a journal</a>
         </li>
       </menu>
-      <h2 class="mt-2 text-3xl font-bold">All journals</h2>
-      <JournalList journals={props.data.journals} />
+      <h2 class="mt-2 text-3xl font-bold">My journals</h2>
+      <MyJournals journals={props.data.journals} />
     </main>
   )
 }
 
-function JournalList(props: {journals: Journal[]}) {
+function MyJournals(props: {journals: Journal[]}) {
   const {journals} = props
   if (journals.length === 0) {
     return <p className="italic">No journal yet</p>
