@@ -1,5 +1,12 @@
 import {slug as generateSlug} from '$slug'
-import {CreateJournal, Journal, NotFoundError, SlugAlreadyUsed} from './journal.types.ts'
+import {
+  Journal,
+  JournalEntry,
+  NotFoundError,
+  SlugAlreadyUsed,
+  StartJournal,
+  WriteJournalEntry,
+} from './journal.types.ts'
 import {isUniqueConstraintError, SqliteClient} from '../database/sqlite.ts'
 
 // reserved slugs at the same URL path level
@@ -8,7 +15,7 @@ const reservedSlugs = ['create']
 export class JournalService {
   constructor(private readonly client: SqliteClient = new SqliteClient()) {}
 
-  createJournal(input: CreateJournal): Journal {
+  startJournal(input: StartJournal): Journal {
     const slug = generateSlug(input.slug || input.title)
     if (reservedSlugs.includes(slug)) {
       throw new SlugAlreadyUsed(slug)
@@ -22,7 +29,8 @@ export class JournalService {
     }
 
     const stmt = this.client.db.prepare(
-      `INSERT INTO journal(id, slug, title, createdAt) values (:id, :slug, :title, :createdAt)`,
+      `INSERT INTO journal(id, slug, title, createdAt)
+       values (:id, :slug, :title, :createdAt)`,
     )
 
     try {
@@ -49,5 +57,31 @@ export class JournalService {
       throw new NotFoundError(`Journal ${slug} was not found`)
     }
     return journal
+  }
+
+  writeEntry(journalId: string, createEntry: WriteJournalEntry): JournalEntry {
+    const entry: JournalEntry = {
+      id: crypto.randomUUID(),
+      createdAt: new Date(),
+      title: createEntry.title,
+      content: createEntry.content,
+      journalId,
+    }
+    const stmt = this.client.db.prepare(
+      `INSERT INTO journal_entry (id, title, createdAt, content, journalId)
+       VALUES (:id, :title, :createdAt, :content, :journalId)`,
+    )
+    stmt.run(entry)
+    return entry
+  }
+
+  listJournalEntries(journalId: string, order: {createdAt: 'DESC' | 'ASC'}): JournalEntry[] {
+    const stmt = this.client.db.prepare(
+      `SELECT *
+       FROM journal_entry
+       WHERE journalId = :journalId
+       ORDER BY createdAt ${order.createdAt}`,
+    )
+    return stmt.all<JournalEntry>({journalId})
   }
 }

@@ -21,7 +21,7 @@ export const handler: Handlers = {
 
     const service = new JournalService()
     try {
-      const journal = await service.createJournal(result.data)
+      const journal = service.startJournal(result.data)
       const headers = new Headers()
       headers.set('location', `/${journal.slug}`)
       return new Response(null, {status: 303, headers})
