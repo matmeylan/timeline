@@ -18,6 +18,7 @@ export const handler: Handlers = {
     }
   },
   async POST(req, ctx) {
+    const slug = ctx.params.slug
     const formData = await req.formData()
     const title = formData.get('title')?.toString()
     const content = formData.get('content')?.toString()
@@ -25,11 +26,13 @@ export const handler: Handlers = {
     const result = WriteEntrySchema.safeParse(form)
 
     if (!result.success) {
-      return ctx.render({error: result.error, form}, {status: 400})
+      const service = new JournalService()
+      const journal = service.getJournalBySlug(slug)
+      return ctx.render({journal, form, error: result.error}, {status: 400})
     }
 
     const service = new JournalService()
-    const journal = service.getJournalBySlug(ctx.params.slug)
+    const journal = service.getJournalBySlug(slug)
     service.writeEntry(journal.id, result.data)
 
     const headers = new Headers()
@@ -56,6 +59,7 @@ export default function WriteEntryPage(props: PageProps<WriteEntryState>) {
           Content
           <textarea cols={10} name="content" value={form?.content} required />
         </label>
+        <div>{errors?.fieldErrors.content}</div>
 
         <button type="submit">Create</button>
       </form>
