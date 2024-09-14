@@ -1,7 +1,6 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
 import {Journal, JournalEntry, NotFoundError} from '../core/domain/journal.types.ts'
 import {JournalService} from '../core/domain/journal.ts'
-import {DENO_DEPLOYMENT_ID} from '$fresh/src/server/build_id.ts'
 
 export const handler: Handlers = {
   GET(req, ctx) {
