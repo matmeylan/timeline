@@ -32,7 +32,7 @@ export default function JournalPage(props: PageProps<JournalState>) {
 
   return (
     <main>
-      <h1 class="text-4xl font-bold">{journal.title}</h1>
+      <h1 className="text-4xl font-bold">{journal.title}</h1>
       <p>Since {date.format(new Date(journal.createdAt))}</p>
       <a href={'/' + journal.slug + '/write'}>Write an entry</a>
       <div className="mt-8">
