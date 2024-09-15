@@ -1,8 +1,8 @@
 import {SqliteClient} from '../../src/core/database/sqlite.ts'
 import * as definedMigrations from './migrations/migrations.ts'
 import {Migration} from './migrations.types.ts'
-import '$std/dotenv/load.ts'
-import * as log from '$std/log/mod.ts'
+import '@std/dotenv/load'
+import * as log from '@std/log'
 
 function seed(client: SqliteClient) {}
 

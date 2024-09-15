@@ -2,6 +2,7 @@ import {Handlers, PageProps} from '$fresh/server.ts'
 import {JournalService} from '../../core/domain/journal.ts'
 import {Journal, NotFoundError} from '../../core/domain/journal.types.ts'
 import {z, ZodError} from '$zod'
+import FileUpload from '../../islands/file-upload.tsx'
 
 export const handler: Handlers = {
   GET(req, ctx) {
@@ -60,6 +61,11 @@ export default function WriteEntryPage(props: PageProps<WriteEntryState>) {
           <textarea cols={10} name="content" value={form?.content} required />
         </label>
         <div>{errors?.fieldErrors.content}</div>
+
+        <label>
+          Add file
+          <FileUpload />
+        </label>
 
         <button type="submit">Create</button>
       </form>

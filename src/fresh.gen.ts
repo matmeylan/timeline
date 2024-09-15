@@ -7,9 +7,12 @@ import * as $_slug_write from "./routes/[slug]/write.tsx";
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $_layout from "./routes/_layout.tsx";
+import * as $api_files_download_index from "./routes/api/files/download/index.ts";
+import * as $api_files_upload_index from "./routes/api/files/upload/index.ts";
+import * as $api_files_upload_local from "./routes/api/files/upload/local.ts";
 import * as $index from "./routes/index.tsx";
 import * as $start from "./routes/start.tsx";
-
+import * as $file_upload from "./islands/file-upload.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -19,10 +22,15 @@ const manifest = {
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
     "./routes/_layout.tsx": $_layout,
+    "./routes/api/files/download/index.ts": $api_files_download_index,
+    "./routes/api/files/upload/index.ts": $api_files_upload_index,
+    "./routes/api/files/upload/local.ts": $api_files_upload_local,
     "./routes/index.tsx": $index,
     "./routes/start.tsx": $start,
   },
-  islands: {},
+  islands: {
+    "./islands/file-upload.tsx": $file_upload,
+  },
   baseUrl: import.meta.url,
 } satisfies Manifest;
 
