@@ -14,7 +14,7 @@ export const handler: Handlers = {
 
 export default function Home(props: PageProps<JournalIndexState>) {
   return (
-    <main class="flex flex-col items-center justify-center">
+    <main>
       <img
         class="my-6"
         src="/logo.svg"
