@@ -12,7 +12,8 @@ import * as $api_files_upload_index from "./routes/api/files/upload/index.ts";
 import * as $api_files_upload_local from "./routes/api/files/upload/local.ts";
 import * as $index from "./routes/index.tsx";
 import * as $start from "./routes/start.tsx";
-import * as $file_upload from "./islands/file-upload.tsx";
+import * as $content_editor_content_editor from "./islands/content-editor/content-editor.tsx";
+import * as $content_editor_trix from "./islands/content-editor/trix.ts";
 import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -29,7 +30,9 @@ const manifest = {
     "./routes/start.tsx": $start,
   },
   islands: {
-    "./islands/file-upload.tsx": $file_upload,
+    "./islands/content-editor/content-editor.tsx":
+      $content_editor_content_editor,
+    "./islands/content-editor/trix.ts": $content_editor_trix,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

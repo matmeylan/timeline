@@ -59,7 +59,7 @@ function Entries(props: PageProps<JournalState>) {
         <section key={entry.id}>
           <h2>{entry.title}</h2>
           <p>{date.format(new Date(entry.createdAt))}</p>
-          <p className="whitespace-pre">{entry.content}</p>
+          <div className="whitespace-pre" dangerouslySetInnerHTML={{__html: entry.content}}></div>
         </section>
         {idx === arr.length - 1 ? null : <hr className="my-2" />}
       </>
