@@ -37,7 +37,7 @@ export default function Home(props: PageProps<JournalIndexState>) {
 function MyJournals(props: {journals: Journal[]}) {
   const {journals} = props
   if (journals.length === 0) {
-    return <p className="italic">No journal yet</p>
+    return <p class="italic">No journal yet</p>
   }
   return (
     <ul>

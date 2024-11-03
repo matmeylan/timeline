@@ -47,9 +47,9 @@ export default function WriteEntryPage(props: PageProps<WriteEntryState>) {
   const errors = error?.flatten()
   return (
     <>
-      <h1 className="text-4xl font-bold">New entry</h1>
+      <h1 class="text-4xl font-bold">New entry</h1>
       <p>in {journal.title}</p>
-      <form method="post" className="mt-4 inline-flex flex-col gap-1">
+      <form method="post" class="mt-4 inline-flex flex-col gap-1">
         <label>
           Title
           <input type="title" name="title" value={form?.title} required />
