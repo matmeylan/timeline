@@ -13,7 +13,7 @@
   "lint": { "rules": { "tags": ["fresh", "recommended"] } },
   "exclude": ["**/_fresh/*"],
   "imports": {
-    "$fresh/": "https://deno.land/x/fresh@1.6.8/",
+    "$fresh/": "https://deno.land/x/fresh@1.7.2/",
     "$slug": "https://deno.land/x/slug@v1.1.0/mod.ts",
     "$zod": "https://deno.land/x/zod@v3.23.8/mod.ts",
     "@db/sqlite": "jsr:@db/sqlite@^0.12.0",
@@ -22,8 +22,9 @@
     "@std/dotenv": "jsr:@std/dotenv@^0.225.2",
     "@std/log": "jsr:@std/log@^0.224.7",
     "@std/path": "jsr:@std/path@^1.0.6",
-    "preact": "https://esm.sh/preact@10.19.6",
-    "preact/": "https://esm.sh/preact@10.19.6/",
+    "@tailwindcss/typography": "npm:@tailwindcss/typography@^0.5.15",
+    "preact": "https://esm.sh/preact@10.22.0",
+    "preact/": "https://esm.sh/preact@10.22.0/",
     "tailwindcss": "npm:tailwindcss@3.4.1",
     "tailwindcss/": "npm:/tailwindcss@3.4.1/",
     "tailwindcss/plugin": "npm:/tailwindcss@3.4.1/plugin.js"

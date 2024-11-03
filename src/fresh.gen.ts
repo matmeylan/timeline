@@ -14,7 +14,7 @@ import * as $index from "./routes/index.tsx";
 import * as $start from "./routes/start.tsx";
 import * as $content_editor_content_editor from "./islands/content-editor/content-editor.tsx";
 import * as $content_editor_trix from "./islands/content-editor/trix.ts";
-import { type Manifest } from "$fresh/server.ts";
+import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
