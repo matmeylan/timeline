@@ -11,6 +11,7 @@ import * as $api_files_download_index from "./routes/api/files/download/index.ts
 import * as $api_files_upload_index from "./routes/api/files/upload/index.ts";
 import * as $api_files_upload_local from "./routes/api/files/upload/local.ts";
 import * as $index from "./routes/index.tsx";
+import * as $journals from "./routes/journals.tsx";
 import * as $start from "./routes/start.tsx";
 import * as $content_editor_content_editor from "./islands/content-editor/content-editor.tsx";
 import * as $content_editor_trix from "./islands/content-editor/trix.ts";
@@ -27,6 +28,7 @@ const manifest = {
     "./routes/api/files/upload/index.ts": $api_files_upload_index,
     "./routes/api/files/upload/local.ts": $api_files_upload_local,
     "./routes/index.tsx": $index,
+    "./routes/journals.tsx": $journals,
     "./routes/start.tsx": $start,
   },
   islands: {

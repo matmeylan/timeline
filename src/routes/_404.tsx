@@ -1,4 +1,5 @@
 import {Head} from '$fresh/runtime.ts'
+import {Container} from '../components/Container.tsx'
 
 export default function Error404() {
   return (
@@ -6,7 +7,7 @@ export default function Error404() {
       <Head>
         <title>404 - Page not found</title>
       </Head>
-      <div class="flex flex-col items-center justify-center">
+      <Container>
         <img
           class="my-6"
           src="/logo.svg"
@@ -19,7 +20,7 @@ export default function Error404() {
         <a href="/" class="underline">
           Go back home
         </a>
-      </div>
+      </Container>
     </>
   )
 }

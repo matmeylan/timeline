@@ -1,55 +1,26 @@
-import {Handlers, PageProps} from '$fresh/server.ts'
-import {JournalService} from '../core/domain/journal.ts'
-import {Journal} from '../core/domain/journal.types.ts'
+import {Container} from '../components/Container.tsx'
 
-export const handler: Handlers = {
-  GET(req, ctx) {
-    const service = new JournalService()
-    const journals: Journal[] = service.listJournals()
-    return ctx.render({
-      journals,
-    })
-  },
-}
-
-export default function Home(props: PageProps<JournalIndexState>) {
+export default function Home() {
   return (
-    <main>
-      <img
-        class="my-6"
-        src="/logo.svg"
-        width="128"
-        height="128"
-        alt="the Fresh logo: a sliced lemon dripping with juice"
-      />
-      <h1 class="text-4xl font-bold">Welcome to your Journals</h1>
-      <menu class="mt-4">
-        <li>
-          <a href="/start">Start a journal</a>
-        </li>
-      </menu>
-      <h2 class="mt-2 text-3xl font-bold">My journals</h2>
-      <MyJournals journals={props.data.journals} />
-    </main>
+    <Container class="mt-16 lg:mt-32">
+      <main>
+        <img
+          class="my-6"
+          src="/logo.svg"
+          width="128"
+          height="128"
+          alt="the Fresh logo: a sliced lemon dripping with juice"
+        />
+        <h1 class="text-4xl font-bold">Welcome to your Journals</h1>
+        <menu class="mt-4">
+          <li>
+            <a href="/start">Start a journal</a>
+          </li>
+          <li>
+            <a href="/journals">See your journals</a>
+          </li>
+        </menu>
+      </main>
+    </Container>
   )
-}
-
-function MyJournals(props: {journals: Journal[]}) {
-  const {journals} = props
-  if (journals.length === 0) {
-    return <p class="italic">No journal yet</p>
-  }
-  return (
-    <ul>
-      {journals.map(t => (
-        <li>
-          <a href={t.slug}>{t.title}</a>
-        </li>
-      ))}
-    </ul>
-  )
-}
-
-interface JournalIndexState {
-  journals: Journal[]
 }

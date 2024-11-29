@@ -3,6 +3,7 @@ import {JournalService} from '../../core/domain/journal.ts'
 import {Journal, NotFoundError} from '../../core/domain/journal.types.ts'
 import {z, ZodError} from '$zod'
 import ContentEditor from '../../islands/content-editor/content-editor.tsx'
+import {Container} from '../../components/Container.tsx'
 
 export const handler: Handlers = {
   GET(req, ctx) {
@@ -46,7 +47,7 @@ export default function WriteEntryPage(props: PageProps<WriteEntryState>) {
   const {journal, form, error} = props.data
   const errors = error?.flatten()
   return (
-    <>
+    <Container class="mt-16 lg:mt-32">
       <h1 class="text-4xl font-bold">New entry</h1>
       <p>in {journal.title}</p>
       <form method="post" class="mt-4 inline-flex flex-col gap-1">
@@ -62,7 +63,7 @@ export default function WriteEntryPage(props: PageProps<WriteEntryState>) {
 
         <button type="submit">Create</button>
       </form>
-    </>
+    </Container>
   )
 }
 

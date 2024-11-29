@@ -2,6 +2,7 @@ import {Handlers, PageProps} from '$fresh/server.ts'
 import {z, ZodError} from '$zod'
 import {JournalService} from '../core/domain/journal.ts'
 import {SlugAlreadyUsed} from '../core/domain/journal.types.ts'
+import {Container} from '../components/Container.tsx'
 
 export const handler: Handlers = {
   async POST(req, ctx) {
@@ -49,19 +50,19 @@ export default function CreateJournal(props: PageProps<CreateJournalState>) {
   const errors = error?.flatten()
   const slugHint = "When left empty, we'll generate a slug for you"
   return (
-    <>
+    <Container class="mt-16 lg:mt-32">
       <h1 class="text-4xl font-bold">New journal</h1>
       <form method="post" class="mt-4 inline-flex flex-col gap-1">
         <label for="title">Title</label>
-        <input type="title" name="title" value={form?.title} required />
+        <input type="title" name="title" value={form?.title} required class="border border-teal-500" />
         <div>{errors?.fieldErrors.title}</div>
 
         <label for="slug">Slug</label>
-        <input type="slug" name="slug" value={form?.slug} />
+        <input type="slug" name="slug" value={form?.slug} class="border border-teal-500" />
         <div>{errors?.fieldErrors.slug ? errors?.fieldErrors.slug : slugHint}</div>
         <button type="submit">Create</button>
       </form>
-    </>
+    </Container>
   )
 }
 
