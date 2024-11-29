@@ -1,0 +1,6 @@
+import {JSX} from 'preact'
+import {clsx} from '@nick/clsx'
+
+export function Prose({class: classes, ...props}: JSX.IntrinsicElements['div']) {
+  return <div class={clsx('prose dark:prose-invert', classes)} {...props} />
+}
