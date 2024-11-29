@@ -10,7 +10,9 @@ export default function Home() {
         height="128"
         alt="the Fresh logo: a sliced lemon dripping with juice"
       />
-      <h1 class="text-4xl font-bold">Welcome to your Journals</h1>
+      <h1 class="text-4xl font-bold">
+        Welcome to <span class="inline-block rotate-6">Journals</span>
+      </h1>
       <menu class="mt-4">
         <li>
           <a href="/start">Start a journal</a>
