@@ -16,10 +16,8 @@ export const handler: Handlers = {
 export default function Journals(props: PageProps<JournalIndexState>) {
   return (
     <Container class="mt-16 lg:mt-32">
-      <main>
-        <h1 class="mt-2 text-4xl font-bold">My journals</h1>
-        <MyJournals journals={props.data.journals} />
-      </main>
+      <h1 class="mt-2 text-4xl font-bold">My journals</h1>
+      <MyJournals journals={props.data.journals} />
     </Container>
   )
 }
