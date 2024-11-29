@@ -5,7 +5,7 @@
   },
   "devDependencies": {
     "@buildigo/prettier-config": "^2.0.0-beta1",
-    "prettier": "^3.3.2",
-    "prettier-plugin-tailwindcss": "^0.6.4"
+    "prettier": "^3.4.1",
+    "prettier-plugin-tailwindcss": "^0.6.9"
   }
 }
