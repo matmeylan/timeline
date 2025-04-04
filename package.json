@@ -3,12 +3,13 @@
   "scripts": {
     "format": "prettier \"**/*.+(js|ts|tsx|html|css|json)\" --write"
   },
+  "dependencies": {
+    "@tailwindcss/typography": "^0.5.16",
+    "tailwindcss": "^4.1.2"
+  },
   "devDependencies": {
     "@buildigo/prettier-config": "^2.0.0-beta1",
     "prettier": "^3.4.1",
     "prettier-plugin-tailwindcss": "^0.6.11"
-  },
-  "dependencies": {
-    "tailwindcss": "^4.1.2"
   }
 }
