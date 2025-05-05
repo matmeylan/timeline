@@ -1,10 +1,4 @@
-export function formatDate(dateToFormat: string | Date): string {
-  const date = new Intl.DateTimeFormat(undefined, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-  })
+export function formatDate(dateToFormat: string | Date, options?: Intl.DateTimeFormatOptions): string {
+  const date = new Intl.DateTimeFormat(undefined, options)
   return date.format(new Date(dateToFormat))
 }

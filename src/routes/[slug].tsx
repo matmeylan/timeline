@@ -1,5 +1,5 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
-import {Journal, JournalEntry, NotFoundError} from '../core/domain/journal.types.ts'
+import {type Journal, type JournalEntry, NotFoundError} from '../core/domain/journal.types.ts'
 import {JournalService} from '../core/domain/journal.ts'
 import {Container} from '../components/Container.tsx'
 import {formatDate} from '../core/date/format-date.ts'
@@ -28,8 +28,10 @@ export default function JournalPage(props: PageProps<JournalState>) {
   const {journal, entries} = props.data
   return (
     <JournalLayout {...props}>
-      <a href={'/' + journal.slug + '/write'}>Write an entry</a>
-      <Entries journal={journal} entries={entries} />
+      <nav class="mb-6">
+        <a href={'/' + journal.slug + '/write'}>Write</a>
+      </nav>
+      <JournalTimeline journal={journal} entries={entries} />
     </JournalLayout>
   )
 }
@@ -49,7 +51,12 @@ function ArrowLeftIcon(props: JSX.IntrinsicElements['svg']) {
 
 function JournalLayout(props: PageProps<JournalState> & {children: unknown[]}) {
   const {journal} = props.data
-  const createdAt = formatDate(new Date(journal.createdAt))
+  const createdAt = formatDate(new Date(journal.createdAt), {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+  })
   return (
     <Container class="mt-16 lg:mt-32">
       <div class="xl:relative">
@@ -62,7 +69,7 @@ function JournalLayout(props: PageProps<JournalState> & {children: unknown[]}) {
           >
             <ArrowLeftIcon class="h-4 w-4 stroke-zinc-500 transition group-hover:stroke-zinc-700 dark:stroke-zinc-500 dark:group-hover:stroke-zinc-400" />
           </a>
-          <article>
+          <section>
             <header class="flex flex-col">
               <h1 class="mt-6 text-4xl font-bold tracking-tight text-zinc-800 sm:text-5xl dark:text-zinc-100">
                 {journal.title}
@@ -72,44 +79,53 @@ function JournalLayout(props: PageProps<JournalState> & {children: unknown[]}) {
                 class="order-first flex items-center text-base text-zinc-400 dark:text-zinc-500"
               >
                 <span class="h-4 w-0.5 rounded-full bg-zinc-200 dark:bg-zinc-500" />
-                <span class="ml-3">{createdAt}</span>
+                <span class="ml-3">Started on {createdAt}</span>
               </time>
             </header>
-            <Prose class="mt-8">{props.children}</Prose>
-          </article>
+            <div class="mt-8">{props.children}</div>
+          </section>
         </div>
       </div>
     </Container>
   )
 }
 
-function Entries(props: JournalState) {
+function JournalTimeline(props: JournalState) {
   const {entries} = props
   if (entries.length === 0) {
     return <p>No entries yet</p>
   } else {
-    const date = new Intl.DateTimeFormat(undefined, {
+    const entryDateFormat = new Intl.DateTimeFormat(undefined, {
       year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
+      month: 'short',
+      day: '2-digit',
     })
     return (
       <>
-        {entries.map((entry, idx, arr) => (
-          <>
-            <section key={entry.id}>
-              <h2>{entry.title}</h2>
-              <p>{date.format(new Date(entry.createdAt))}</p>
-              <div class="whitespace-pre" dangerouslySetInnerHTML={{__html: entry.content}}></div>
-            </section>
-            {idx === arr.length - 1 ? null : <hr class="my-2" />}
-          </>
-        ))}
+        <div className="md:border-l md:border-zinc-100 md:pl-6 md:dark:border-zinc-700/40">
+          <div className="flex max-w-3xl flex-col space-y-16">
+            {entries.map(entry => (
+              <JournalEntry key={entry.id} entry={entry} date={entryDateFormat} />
+            ))}
+          </div>
+        </div>
       </>
     )
   }
+}
+
+function JournalEntry({entry, date}: {entry: JournalEntry; date: Intl.DateTimeFormat}) {
+  return (
+    <article class="md:grid md:grid-cols-4 md:items-baseline">
+      <time class="text-sm text-zinc-400 dark:text-zinc-500">{date.format(new Date(entry.createdAt))}</time>
+      <div class="md:col-span-3">
+        <h2>{entry.title}</h2>
+        <Prose>
+          <div className="whitespace-pre" dangerouslySetInnerHTML={{__html: entry.content}}></div>
+        </Prose>
+      </div>
+    </article>
+  )
 }
 
 interface JournalState {
