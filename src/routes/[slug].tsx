@@ -60,7 +60,7 @@ function JournalLayout(props: PageProps<JournalState> & {children: unknown[]}) {
   return (
     <Container class="mt-16 lg:mt-32">
       <div class="xl:relative">
-        <div class="mx-auto max-w-2xl">
+        <div class="max-w-2xl">
           <a
             type="button"
             href="/journals"
@@ -74,12 +74,8 @@ function JournalLayout(props: PageProps<JournalState> & {children: unknown[]}) {
               <h1 class="mt-6 text-4xl font-bold tracking-tight text-zinc-800 sm:text-5xl dark:text-zinc-100">
                 {journal.title}
               </h1>
-              <time
-                dateTime={createdAt}
-                class="order-first flex items-center text-base text-zinc-400 dark:text-zinc-500"
-              >
-                <span class="h-4 w-0.5 rounded-full bg-zinc-200 dark:bg-zinc-500" />
-                <span class="ml-3">Started on {createdAt}</span>
+              <time dateTime={createdAt} class="mt-6 text-base text-zinc-600 dark:text-zinc-400">
+                Started on {createdAt}
               </time>
             </header>
             <div class="mt-8">{props.children}</div>
@@ -120,9 +116,7 @@ function JournalEntry({entry, date}: {entry: JournalEntry; date: Intl.DateTimeFo
       <time class="text-sm text-zinc-400 dark:text-zinc-500">{date.format(new Date(entry.createdAt))}</time>
       <div class="md:col-span-3">
         <h2>{entry.title}</h2>
-        <Prose>
-          <div className="whitespace-pre" dangerouslySetInnerHTML={{__html: entry.content}}></div>
-        </Prose>
+        <Prose dangerouslySetInnerHTML={{__html: entry.content}} />
       </div>
     </article>
   )

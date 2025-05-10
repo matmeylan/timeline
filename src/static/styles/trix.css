@@ -1,11 +1,17 @@
 /* region start copy paste of https://unpkg.com/trix@2.1.5/dist/trix.css */
 trix-editor {
-    border: 1px solid #bbb;
-    border-radius: 3px;
+    border: 1px solid;
+    border-color: var(--color-zinc-400);
+    border-radius: var(--radius-sm);
     margin: 0;
-    padding: 0.4em 0.6em;
-    min-height: 5em;
-    outline: none; }
+    padding: calc(var(--spacing) * 2) calc(var(--spacing) * 4);
+    min-height: 20em;
+    outline: none;
+}
+
+trix-editor:focus-visible {
+    outline: -webkit-focus-ring-color auto 1px;
+}
 
 trix-toolbar * {
     box-sizing: border-box; }
@@ -181,7 +187,8 @@ trix-toolbar .trix-dialog__link-fields {
     display: flex;
     align-items: baseline; }
 trix-toolbar .trix-dialog__link-fields .trix-input {
-    flex: 1; }
+    flex: 1;
+}
 trix-toolbar .trix-dialog__link-fields .trix-button-group {
     flex: 0 0 content;
     margin: 0; }

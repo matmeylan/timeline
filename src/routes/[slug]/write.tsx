@@ -48,12 +48,17 @@ export default function WriteEntryPage(props: PageProps<WriteEntryState>) {
   const errors = error?.flatten()
   return (
     <Container class="mt-16 lg:mt-32">
-      <h1 class="text-4xl font-bold">New entry</h1>
-      <p>in {journal.title}</p>
-      <form method="post" class="mt-4 inline-flex flex-col gap-1">
+      <h1 class="text-4xl font-bold">New entry in "{journal.title}"</h1>
+      <form method="post" class="mt-4 flex flex-1 flex-col gap-1">
         <label>
-          Title
-          <input type="title" name="title" value={form?.title} required />
+          <input
+            type="title"
+            name="title"
+            value={form?.title}
+            placeholder="Title"
+            class="py-2 px-4 border border-zinc-400 rounded-sm mb-2"
+            required
+          />
         </label>
         <div>{errors?.fieldErrors.title}</div>
 
