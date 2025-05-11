@@ -46,6 +46,7 @@ export const handler: Handlers = {
 export default function WriteEntryPage(props: PageProps<WriteEntryState>) {
   const {journal, form, error} = props.data
   const errors = error?.flatten()
+
   return (
     <Container class="mt-16 lg:mt-32">
       <h1 class="text-4xl font-bold">New entry in "{journal.title}"</h1>
@@ -62,8 +63,7 @@ export default function WriteEntryPage(props: PageProps<WriteEntryState>) {
         </label>
         <div>{errors?.fieldErrors.title}</div>
 
-        <input id="content" type="hidden" name="content" />
-        <ContentEditor placeholder={`Add note to "${journal.title}"...`} input="content" />
+        <ContentEditor inputName="content" />
         <div>{errors?.fieldErrors.content}</div>
 
         <button type="submit">Create</button>

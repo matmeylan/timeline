@@ -4,6 +4,7 @@
     "format": "prettier \"**/*.+(js|ts|tsx|html|css|json)\" --write"
   },
   "dependencies": {
+    "@milkdown/kit": "^7.10.2",
     "@tailwindcss/typography": "^0.5.16",
     "tailwindcss": "^4.1.2"
   },

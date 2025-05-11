@@ -1,66 +1,77 @@
-import {IS_BROWSER} from '$fresh/runtime.ts'
+// deno-lint-ignore-file react-rules-of-hooks
 import {MAX_UPLOAD_SIZE} from '../../core/domain/file.types.ts'
-import {ComponentChildren} from 'preact'
-import {useEffect} from 'preact/hooks'
-import {TrixAttachment, TrixSetAttributesFn, TrixSetProgressFn} from './trix.ts'
+import {useEffect, useRef} from 'preact/hooks'
+import {IS_BROWSER} from '$fresh/runtime.ts'
+import {Crepe} from '@milkdown/crepe'
+import {RefObject} from 'npm:@types/react@18.3.20'
 
-function TrixProvider(props: {children: ComponentChildren}) {
-  // not loaded and rendered on the server
+export interface ContentEditorProps {
+  content?: string
+  inputName: string
+}
+
+export default function ContentEditor(props: ContentEditorProps) {
   if (!IS_BROWSER) {
-    return <></>
+    return <div></div>
   }
-  useEffect(() => registerListeners(), [])
+  const containerRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    if (containerRef.current) {
+      prepareCrepe(containerRef.current, props, inputRef).then()
+    }
+  }, [])
+
   return (
     <>
-      <link rel="stylesheet" href="/styles/trix.css" />
-      <script type="text/javascript" src="https://unpkg.com/trix@2.1.5/dist/trix.umd.js" crossOrigin="" />
-      {props.children}
+      <link rel="stylesheet" href="/styles/vendors/milkdown/theme/common/style.css" />
+      <link rel="stylesheet" href="/styles/vendors/milkdown/theme/nord/style.css" />
+      <div ref={containerRef} class="border border-zinc-400 rounded-sm"></div>
+      <input ref={inputRef} type="hidden" id={props.inputName} name={props.inputName} />
     </>
   )
 }
 
-export default function ContentEditor(props: {input?: string; placeholder?: string}) {
-  return (
-    <TrixProvider>
-      <trix-editor autofocus={true} placeholder={props?.placeholder} input={props?.input}></trix-editor>
-    </TrixProvider>
-  )
+async function prepareCrepe(root: HTMLDivElement, props: ContentEditorProps, inputRef: RefObject<HTMLInputElement>) {
+  const crepe = new Crepe({
+    root,
+    defaultValue: props.content,
+    features: {
+      [Crepe.Feature.Latex]: false,
+    },
+    featureConfigs: {
+      [Crepe.Feature.ImageBlock]: {
+        onUpload: (file: File) => startSignedUpload(file),
+      },
+    },
+  })
+
+  await crepe.create()
+
+  // update the input ref value with the markdown from the editor
+  crepe.on(listener => {
+    listener.markdownUpdated((ctx, markdown, prev) => {
+      if (inputRef.current) {
+        inputRef.current.value = markdown
+      }
+    })
+  })
+
+  return crepe
 }
 
-function registerListeners() {
-  document.addEventListener('trix-file-accept', event => {
-    const file = event.file
-    if (file && file.size > MAX_UPLOAD_SIZE) {
-      console.warn('File is too large', {file})
-      event.preventDefault()
-      return
-    }
-  })
-  document.addEventListener('trix-attachment-add', event => {
-    if (event.attachment?.file) {
-      uploadFileAttachment(event.attachment)
-    }
-  })
-}
-
-function uploadFileAttachment(attachment: TrixAttachment) {
-  function setProgress(progress: number) {
-    attachment.setUploadProgress(progress)
+async function startSignedUpload(file: File) {
+  // TODO: gracefully handle
+  if (file.size > MAX_UPLOAD_SIZE) {
+    console.warn('File is too large', {file})
+    throw new Error('File is too large')
   }
 
-  function setAttributes(attributes: Record<string, unknown>) {
-    attachment.setAttributes(attributes)
-  }
-
-  return startUploadFile(attachment.file, setProgress, setAttributes)
-}
-
-async function startUploadFile(file: File, setProgress: TrixSetProgressFn, setAttributes: TrixSetAttributesFn) {
   const {uploadUrl} = await generateUploadSignedUrl(file)
-  const res = await uploadFile(file, uploadUrl, setProgress)
+  const res = await uploadFile(file, uploadUrl)
 
-  setAttributes({url: res.downloadUrl, href: res.downloadUrl})
   console.log('Upload finished !', {res, file})
+  return res.downloadUrl
 }
 
 async function generateUploadSignedUrl(file: File): Promise<{uploadUrl: string}> {
@@ -83,20 +94,11 @@ async function generateUploadSignedUrl(file: File): Promise<{uploadUrl: string}>
   }
 }
 
-function uploadFile(
-  file: File,
-  signedUrl: string,
-  progressCallback: TrixSetProgressFn,
-): Promise<{downloadUrl: string}> {
+function uploadFile(file: File, signedUrl: string): Promise<{downloadUrl: string}> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open('PUT', signedUrl, true)
     xhr.setRequestHeader('Content-Type', file.type)
-
-    xhr.upload.addEventListener('progress', function (event) {
-      const progress = (event.loaded / event.total) * 100
-      progressCallback(progress)
-    })
     xhr.addEventListener('loadend', event => {
       if (xhr.status == 200) {
         return resolve(JSON.parse(xhr.responseText))
