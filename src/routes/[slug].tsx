@@ -77,7 +77,7 @@ function JournalLayout(props: PageProps<JournalState> & {children: unknown[]}) {
   return (
     <Container class="mt-16 lg:mt-32">
       <div class="xl:relative">
-        <div class="max-w-2xl">
+        <div class="mx-auto max-w-2xl">
           <a
             type="button"
             href="/journals"
@@ -88,7 +88,7 @@ function JournalLayout(props: PageProps<JournalState> & {children: unknown[]}) {
           </a>
           <section>
             <header class="flex flex-col">
-              <h1 class="mt-6 text-4xl font-bold tracking-tight text-zinc-800 sm:text-5xl dark:text-zinc-100">
+              <h1 class="text-4xl font-bold tracking-tight text-zinc-800 sm:text-5xl dark:text-zinc-100">
                 {journal.title}
               </h1>
               <time dateTime={createdAt} class="mt-6 text-base text-zinc-600 dark:text-zinc-400">
