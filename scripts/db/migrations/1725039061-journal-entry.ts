@@ -8,11 +8,12 @@ export class JournalEntry1725039061 implements Migration {
     client.db.exec(`
         create table journal_entry
         (
-            id        TEXT PRIMARY KEY,
-            title     TEXT NOT NULL,
-            createdAt TEXT NOT NULL,
-            content   TEXT NOT NULL,
-            journalId TEXT NOT NULL,
+            id          TEXT PRIMARY KEY,
+            title       TEXT NOT NULL,
+            createdAt   TEXT NOT NULL,
+            content     TEXT NOT NULL,
+            contentType TEXT NOT NULL,
+            journalId   TEXT NOT NULL,
             FOREIGN KEY (journalId) REFERENCES journal (id)
         );
     `)

@@ -65,11 +65,12 @@ export class JournalService {
       createdAt: new Date(),
       title: createEntry.title,
       content: createEntry.content,
+      contentType: createEntry.contentType,
       journalId,
     }
     const stmt = this.client.db.prepare(
-      `INSERT INTO journal_entry (id, title, createdAt, content, journalId)
-       VALUES (:id, :title, :createdAt, :content, :journalId)`,
+      `INSERT INTO journal_entry (id, title, createdAt, content, contentType, journalId)
+       VALUES (:id, :title, :createdAt, :content, :contentType, :journalId)`,
     )
     stmt.run(entry)
     return entry

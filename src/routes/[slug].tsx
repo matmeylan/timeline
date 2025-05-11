@@ -44,6 +44,9 @@ function renderEntries(entries: JournalEntry[]): Promise<RenderedJournalEntry[]>
 }
 
 async function renderEntry(renderer: markdown.Renderer, entry: JournalEntry): Promise<RenderedJournalEntry> {
+  if (entry.contentType !== 'text/markdown') {
+    throw new Error('Only markdown supported at the moment')
+  }
   return {
     ...entry,
     htmlContent: await renderer.render(entry.content),

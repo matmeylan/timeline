@@ -24,7 +24,8 @@ export const handler: Handlers = {
     const formData = await req.formData()
     const title = formData.get('title')?.toString()
     const content = formData.get('content')?.toString()
-    const form = {title, content}
+    const contentType = formData.get('contentType')?.toString()
+    const form = {title, content, contentType}
     const result = WriteEntrySchema.safeParse(form)
 
     if (!result.success) {
@@ -63,6 +64,7 @@ export default function WriteEntryPage(props: PageProps<WriteEntryState>) {
         </label>
         <div>{errors?.fieldErrors.title}</div>
 
+        <input type="hidden" value="text/mdown" id="contentType" name="contentType" />
         <ContentEditor inputName="content" />
         <div>{errors?.fieldErrors.content}</div>
 
@@ -86,6 +88,7 @@ interface Form {
 const WriteEntrySchema = z.object({
   title: z.string().min(2, {message: 'Please provide a title of at least 2 characters'}),
   content: z.string().min(1, {message: 'Please provide a slug of at least 1 character'}),
+  contentType: z.enum(['text/markdown'], {message: 'Only text/markdown supported'}),
 })
 type WriteEntryInput = z.infer<typeof WriteEntrySchema>
 type WriteEntryError = ZodError<WriteEntryInput>
