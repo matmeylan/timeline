@@ -5,16 +5,18 @@ import {Container} from '../components/Container.tsx'
 import {formatDate} from '../core/date/format-date.ts'
 import {Prose} from '../components/Prose.tsx'
 import {JSX} from 'preact'
+import * as markdown from '@libs/markdown'
 
 export const handler: Handlers = {
-  GET(req, ctx) {
+  async GET(req, ctx) {
     const slug = ctx.params.slug
     const service = new JournalService()
     try {
       const journal = service.getJournalBySlug(slug)
-      const entries = service.listJournalEntries(journal.id, {createdAt: 'DESC'})
+      const entries: JournalEntry[] = service.listJournalEntries(journal.id, {createdAt: 'DESC'})
+      const renderedEntries = await renderEntries(entries) // render markdown
 
-      return ctx.render({journal, entries})
+      return ctx.render({journal, entries: renderedEntries})
     } catch (err) {
       if (err instanceof NotFoundError) {
         return ctx.renderNotFound()
@@ -34,6 +36,18 @@ export default function JournalPage(props: PageProps<JournalState>) {
       <JournalTimeline journal={journal} entries={entries} />
     </JournalLayout>
   )
+}
+
+function renderEntries(entries: JournalEntry[]): Promise<RenderedJournalEntry[]> {
+  const renderer = new markdown.Renderer()
+  return Promise.all(entries.map(entry => renderEntry(renderer, entry)))
+}
+
+async function renderEntry(renderer: markdown.Renderer, entry: JournalEntry): Promise<RenderedJournalEntry> {
+  return {
+    ...entry,
+    htmlContent: await renderer.render(entry.content),
+  }
 }
 
 function ArrowLeftIcon(props: JSX.IntrinsicElements['svg']) {
@@ -110,13 +124,13 @@ function JournalTimeline(props: JournalState) {
   }
 }
 
-function JournalEntry({entry, date}: {entry: JournalEntry; date: Intl.DateTimeFormat}) {
+function JournalEntry({entry, date}: {entry: RenderedJournalEntry; date: Intl.DateTimeFormat}) {
   return (
     <article class="md:grid md:grid-cols-4 md:items-baseline">
       <time class="text-sm text-zinc-400 dark:text-zinc-500">{date.format(new Date(entry.createdAt))}</time>
       <div class="md:col-span-3">
         <h2>{entry.title}</h2>
-        <Prose dangerouslySetInnerHTML={{__html: entry.content}} />
+        <Prose dangerouslySetInnerHTML={{__html: entry.htmlContent}} />
       </div>
     </article>
   )
@@ -124,5 +138,7 @@ function JournalEntry({entry, date}: {entry: JournalEntry; date: Intl.DateTimeFo
 
 interface JournalState {
   journal: Journal
-  entries: JournalEntry[]
+  entries: RenderedJournalEntry[]
 }
+
+type RenderedJournalEntry = JournalEntry & {htmlContent: string}
