@@ -14,7 +14,6 @@ export interface Journal extends Model {
 }
 
 export interface WriteJournalEntry {
-  title: string
   content: string
   contentType: string
 }
@@ -22,7 +21,6 @@ export interface WriteJournalEntry {
 export interface JournalEntry extends Model {
   id: string
   createdAt: Date | string // ISO-8601
-  title: string
   content: string
   contentType: string
   journalId: string // reference to journal table

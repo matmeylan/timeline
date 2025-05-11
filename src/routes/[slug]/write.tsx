@@ -22,10 +22,9 @@ export const handler: Handlers = {
   async POST(req, ctx) {
     const slug = ctx.params.slug
     const formData = await req.formData()
-    const title = formData.get('title')?.toString()
     const content = formData.get('content')?.toString()
     const contentType = formData.get('contentType')?.toString()
-    const form = {title, content, contentType}
+    const form = {content, contentType}
     const result = WriteEntrySchema.safeParse(form)
 
     if (!result.success) {
@@ -52,21 +51,10 @@ export default function WriteEntryPage(props: PageProps<WriteEntryState>) {
     <Container class="mt-16 lg:mt-32">
       <h1 class="text-4xl font-bold">New entry in "{journal.title}"</h1>
       <form method="post" class="mt-4 flex flex-1 flex-col gap-1">
-        <label>
-          <input
-            type="title"
-            name="title"
-            value={form?.title}
-            placeholder="Title"
-            class="py-2 px-4 border border-zinc-400 rounded-sm mb-2"
-            required
-          />
-        </label>
-        <div>{errors?.fieldErrors.title}</div>
-
-        <input type="hidden" value="text/mdown" id="contentType" name="contentType" />
-        <ContentEditor inputName="content" />
+        <input type="hidden" value="text/markdown" id="contentType" name="contentType" />
+        <ContentEditor inputName="content" content={form?.content} />
         <div>{errors?.fieldErrors.content}</div>
+        <div>{errors?.fieldErrors.contentType}</div>
 
         <button type="submit">Create</button>
       </form>
@@ -86,9 +74,8 @@ interface Form {
 }
 
 const WriteEntrySchema = z.object({
-  title: z.string().min(2, {message: 'Please provide a title of at least 2 characters'}),
   content: z.string().min(1, {message: 'Please provide a slug of at least 1 character'}),
-  contentType: z.enum(['text/markdown'], {message: 'Only text/markdown supported'}),
+  contentType: z.enum(['text/markdown'], {message: 'Only markdown is supported at the moment'}),
 })
 type WriteEntryInput = z.infer<typeof WriteEntrySchema>
 type WriteEntryError = ZodError<WriteEntryInput>

@@ -132,7 +132,6 @@ function JournalEntry({entry, date}: {entry: RenderedJournalEntry; date: Intl.Da
     <article class="md:grid md:grid-cols-4 md:items-baseline">
       <time class="text-sm text-zinc-400 dark:text-zinc-500">{date.format(new Date(entry.createdAt))}</time>
       <div class="md:col-span-3">
-        <h2>{entry.title}</h2>
         <Prose dangerouslySetInnerHTML={{__html: entry.htmlContent}} />
       </div>
     </article>
