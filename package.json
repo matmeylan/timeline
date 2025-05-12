@@ -1,5 +1,4 @@
 {
-  "prettier": "@buildigo/prettier-config",
   "scripts": {
     "format": "prettier \"**/*.+(js|ts|tsx|html|css|json)\" --write"
   },

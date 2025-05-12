@@ -66,27 +66,27 @@ function JournalLayout(props: PageProps<JournalState> & {children: ComponentChil
             type="button"
             href="/journals"
             aria-label="Go back to my journals"
-            class="group mb-8 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md shadow-zinc-800/5 ring-1 ring-zinc-900/5 transition lg:absolute lg:-left-5 lg:-mt-2 lg:mb-0 xl:-top-1.5 xl:left-0 xl:mt-0 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0 dark:ring-white/10 dark:hover:border-zinc-700 dark:hover:ring-white/20"
+            class="group mb-8 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md ring-1 shadow-zinc-800/5 ring-zinc-900/5 transition lg:absolute lg:-left-5 lg:-mt-2 lg:mb-0 xl:-top-1.5 xl:left-0 xl:mt-0 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0 dark:ring-white/10 dark:hover:border-zinc-700 dark:hover:ring-white/20"
           >
             <ArrowLeftIcon class="h-4 w-4 stroke-zinc-500 transition group-hover:stroke-zinc-700 dark:stroke-zinc-500 dark:group-hover:stroke-zinc-400" />
           </a>
           <section>
-            <header class="grid sm:grid-cols-6 gap-2">
+            <header class="grid gap-2 sm:grid-cols-6">
               <h1 class="col-span-5 text-4xl font-bold tracking-tight text-zinc-800 sm:text-5xl dark:text-zinc-100">
                 {journal.title}
               </h1>
-              <time dateTime={createdAt} class="row-start-2 col-span-5 text-base text-zinc-600 dark:text-zinc-400">
+              <time dateTime={createdAt} class="col-span-5 row-start-2 text-base text-zinc-600 dark:text-zinc-400">
                 Started on {createdAt}
               </time>
-              <div class="self-center col-span-1">
+              <div class="col-span-1 self-center">
                 <a
                   type="button"
                   href={'/' + journal.slug + '/write'}
                   aria-label="Write"
-                  class="inline-flex flex-row gap-2 px-3 py-2 group rounded-xl bg-white/90 shadow-lg shadow-zinc-800/5 ring-1 ring-zinc-900/5 backdrop-blur-sm transition dark:bg-zinc-800/90 dark:ring-white/10 dark:hover:ring-white/20"
+                  class="group inline-flex flex-row gap-2 rounded-xl bg-white/90 px-3 py-2 shadow-lg ring-1 shadow-zinc-800/5 ring-zinc-900/5 backdrop-blur-sm transition dark:bg-zinc-800/90 dark:ring-white/10 dark:hover:ring-white/20"
                 >
-                  <WriteIcon class="h-6 w-6 fill-zinc-500 transition group-hover:stroke-zinc-200 group-hover:fill-zinc-700 [@media(prefers-color-scheme:dark)]:stroke-teal-50 [@media(prefers-color-scheme:dark)]:fill-teal-500 [@media(prefers-color-scheme:dark)]:group-hover:stroke-teal-50 [@media(prefers-color-scheme:dark)]:group-hover:fill-teal-600" />
-                  <label class=" cursor-pointer text-zinc-500 group-hover:text-zinc-700 [@media(prefers-color-scheme:dark)]:group-hover:text-teal-600 [@media(prefers-color-scheme:dark)]:text-teal-500">
+                  <WriteIcon class="h-6 w-6 fill-zinc-500 transition group-hover:fill-zinc-700 group-hover:stroke-zinc-200 [@media(prefers-color-scheme:dark)]:fill-teal-500 [@media(prefers-color-scheme:dark)]:stroke-teal-50 [@media(prefers-color-scheme:dark)]:group-hover:fill-teal-600 [@media(prefers-color-scheme:dark)]:group-hover:stroke-teal-50" />
+                  <label class="cursor-pointer text-zinc-500 group-hover:text-zinc-700 [@media(prefers-color-scheme:dark)]:text-teal-500 [@media(prefers-color-scheme:dark)]:group-hover:text-teal-600">
                     Write
                   </label>
                 </a>

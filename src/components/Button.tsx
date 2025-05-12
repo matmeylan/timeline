@@ -6,7 +6,7 @@ export function Button(props: JSX.HTMLAttributes<HTMLButtonElement>) {
     <button
       {...props}
       disabled={!IS_BROWSER || props.disabled}
-      class="px-2 py-1 border-gray-500 border-2 rounded-sm bg-white hover:bg-gray-200 transition-colors"
+      class="rounded-sm border-2 border-gray-500 bg-white px-2 py-1 transition-colors hover:bg-gray-200"
     />
   )
 }

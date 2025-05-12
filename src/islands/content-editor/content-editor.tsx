@@ -26,7 +26,7 @@ export default function ContentEditor(props: ContentEditorProps) {
     <>
       <link rel="stylesheet" href="/styles/vendors/milkdown/theme/common/style.css" />
       <link rel="stylesheet" href="/styles/vendors/milkdown/theme/nord/style.css" />
-      <div ref={containerRef} class="border border-zinc-400 rounded-sm"></div>
+      <div ref={containerRef} class="rounded-sm border border-zinc-400"></div>
       <input ref={inputRef} type="hidden" id={props.inputName} name={props.inputName} />
     </>
   )
