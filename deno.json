@@ -10,7 +10,7 @@
     "preview": "deno run -A src/main.ts",
     "update": "deno run -A -r https://fresh.deno.dev/update ."
   },
-  "lint": { "rules": { "tags": ["fresh", "recommended"] } },
+  "lint": {"rules": {"tags": ["fresh", "recommended"]}},
   "exclude": ["**/_fresh/*"],
   "imports": {
     "$fresh/": "https://deno.land/x/fresh@1.7.2/",
@@ -37,6 +37,6 @@
     "tailwindcss": "npm:tailwindcss@^4.1.2",
     "tailwindcss/": "npm:/tailwindcss@^4.1.2/"
   },
-  "compilerOptions": { "jsx": "react-jsx", "jsxImportSource": "preact" },
+  "compilerOptions": {"jsx": "react-jsx", "jsxImportSource": "preact"},
   "nodeModulesDir": "auto"
 }
