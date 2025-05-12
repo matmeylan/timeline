@@ -1,6 +1,6 @@
 // deno-lint-ignore-file react-rules-of-hooks
 import {MAX_UPLOAD_SIZE} from '../../core/domain/file.types.ts'
-import {useEffect, useRef} from 'preact/hooks'
+import {useEffect, useRef, useState} from 'preact/hooks'
 import {IS_BROWSER} from '$fresh/runtime.ts'
 import {Crepe} from '@milkdown/crepe'
 import {RefObject} from 'npm:@types/react@18.3.20'
@@ -14,20 +14,25 @@ export default function ContentEditor(props: ContentEditorProps) {
   if (!IS_BROWSER) {
     return <div></div>
   }
+  const [loading, setLoading] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => {
     if (containerRef.current) {
-      prepareCrepe(containerRef.current, props, inputRef).then()
+      prepareCrepe(containerRef.current, props, inputRef).then(() => {
+        setLoading(false)
+      })
     }
   }, [])
 
+  const containerClasses = (loading ? 'hidden ' : '') + 'rounded-sm border border-zinc-400'
   return (
     <>
       <link rel="stylesheet" href="/styles/vendors/milkdown/theme/common/style.css" />
       <link rel="stylesheet" href="/styles/vendors/milkdown/theme/nord/style.css" />
-      <div ref={containerRef} class="rounded-sm border border-zinc-400"></div>
       <input ref={inputRef} type="hidden" id={props.inputName} name={props.inputName} />
+      {loading && <div>Loading ...</div>}
+      <div ref={containerRef} class={containerClasses}></div>
     </>
   )
 }
@@ -42,6 +47,10 @@ async function prepareCrepe(root: HTMLDivElement, props: ContentEditorProps, inp
     featureConfigs: {
       [Crepe.Feature.ImageBlock]: {
         onUpload: (file: File) => startSignedUpload(file),
+      },
+      [Crepe.Feature.Placeholder]: {
+        text: 'What happened ?',
+        mode: 'doc',
       },
     },
   })
