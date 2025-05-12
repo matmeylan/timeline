@@ -4,7 +4,7 @@ import {JournalService} from '../core/domain/journal.ts'
 import {Container} from '../components/Container.tsx'
 import {formatDate} from '../core/date/format-date.ts'
 import {Prose} from '../components/Prose.tsx'
-import {JSX} from 'preact'
+import type {ComponentChildren, JSX} from 'preact'
 import * as markdown from '@libs/markdown'
 
 export const handler: Handlers = {
@@ -26,18 +26,6 @@ export const handler: Handlers = {
   },
 }
 
-export default function JournalPage(props: PageProps<JournalState>) {
-  const {journal, entries} = props.data
-  return (
-    <JournalLayout {...props}>
-      <nav class="mb-6">
-        <a href={'/' + journal.slug + '/write'}>Write</a>
-      </nav>
-      <JournalTimeline journal={journal} entries={entries} />
-    </JournalLayout>
-  )
-}
-
 function renderEntries(entries: JournalEntry[]): Promise<RenderedJournalEntry[]> {
   const renderer = new markdown.Renderer()
   return Promise.all(entries.map(entry => renderEntry(renderer, entry)))
@@ -53,20 +41,16 @@ async function renderEntry(renderer: markdown.Renderer, entry: JournalEntry): Pr
   }
 }
 
-function ArrowLeftIcon(props: JSX.IntrinsicElements['svg']) {
+export default function JournalPage(props: PageProps<JournalState>) {
+  const {journal, entries} = props.data
   return (
-    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
-      <path
-        d="M7.25 11.25 3.75 8m0 0 3.5-3.25M3.75 8h8.5"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <JournalLayout {...props}>
+      <JournalTimeline journal={journal} entries={entries} />
+    </JournalLayout>
   )
 }
 
-function JournalLayout(props: PageProps<JournalState> & {children: unknown[]}) {
+function JournalLayout(props: PageProps<JournalState> & {children: ComponentChildren}) {
   const {journal} = props.data
   const createdAt = formatDate(new Date(journal.createdAt), {
     year: 'numeric',
@@ -87,16 +71,29 @@ function JournalLayout(props: PageProps<JournalState> & {children: unknown[]}) {
             <ArrowLeftIcon class="h-4 w-4 stroke-zinc-500 transition group-hover:stroke-zinc-700 dark:stroke-zinc-500 dark:group-hover:stroke-zinc-400" />
           </a>
           <section>
-            <header class="flex flex-col">
-              <h1 class="text-4xl font-bold tracking-tight text-zinc-800 sm:text-5xl dark:text-zinc-100">
+            <header class="grid sm:grid-cols-6 gap-2">
+              <h1 class="col-span-5 text-4xl font-bold tracking-tight text-zinc-800 sm:text-5xl dark:text-zinc-100">
                 {journal.title}
               </h1>
-              <time dateTime={createdAt} class="mt-6 text-base text-zinc-600 dark:text-zinc-400">
+              <time dateTime={createdAt} class="row-start-2 col-span-5 text-base text-zinc-600 dark:text-zinc-400">
                 Started on {createdAt}
               </time>
+              <div class="self-center col-span-1">
+                <a
+                  type="button"
+                  href={'/' + journal.slug + '/write'}
+                  aria-label="Write"
+                  class="inline-flex flex-row gap-2 px-3 py-2 group rounded-xl bg-white/90 shadow-lg shadow-zinc-800/5 ring-1 ring-zinc-900/5 backdrop-blur-sm transition dark:bg-zinc-800/90 dark:ring-white/10 dark:hover:ring-white/20"
+                >
+                  <WriteIcon class="h-6 w-6 fill-zinc-500 transition group-hover:stroke-zinc-200 group-hover:fill-zinc-700 [@media(prefers-color-scheme:dark)]:stroke-teal-50 [@media(prefers-color-scheme:dark)]:fill-teal-500 [@media(prefers-color-scheme:dark)]:group-hover:stroke-teal-50 [@media(prefers-color-scheme:dark)]:group-hover:fill-teal-600" />
+                  <label class=" cursor-pointer text-zinc-500 group-hover:text-zinc-700 [@media(prefers-color-scheme:dark)]:group-hover:text-teal-600 [@media(prefers-color-scheme:dark)]:text-teal-500">
+                    Write
+                  </label>
+                </a>
+              </div>
             </header>
-            <div class="mt-8">{props.children}</div>
           </section>
+          <section class="mt-8">{props.children}</section>
         </div>
       </div>
     </Container>
@@ -115,12 +112,10 @@ function JournalTimeline(props: JournalState) {
     })
     return (
       <>
-        <div className="md:border-l md:border-zinc-100 md:pl-6 md:dark:border-zinc-700/40">
-          <div className="flex max-w-3xl flex-col space-y-16">
-            {entries.map(entry => (
-              <JournalEntry key={entry.id} entry={entry} date={entryDateFormat} />
-            ))}
-          </div>
+        <div class="flex max-w-3xl flex-col space-y-16">
+          {entries.map(entry => (
+            <JournalEntry key={entry.id} entry={entry} date={entryDateFormat} />
+          ))}
         </div>
       </>
     )
@@ -129,7 +124,7 @@ function JournalTimeline(props: JournalState) {
 
 function JournalEntry({entry, date}: {entry: RenderedJournalEntry; date: Intl.DateTimeFormat}) {
   return (
-    <article class="md:grid md:grid-cols-4 md:items-baseline">
+    <article class="md:grid md:grid-cols-4 md:items-start">
       <time class="text-sm text-zinc-400 dark:text-zinc-500">{date.format(new Date(entry.createdAt))}</time>
       <div class="md:col-span-3">
         <Prose dangerouslySetInnerHTML={{__html: entry.htmlContent}} />
@@ -144,3 +139,30 @@ interface JournalState {
 }
 
 type RenderedJournalEntry = JournalEntry & {htmlContent: string}
+
+function ArrowLeftIcon(props: JSX.IntrinsicElements['svg']) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
+      <path
+        d="M7.25 11.25 3.75 8m0 0 3.5-3.25M3.75 8h8.5"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function WriteIcon(props: JSX.IntrinsicElements['svg']) {
+  // <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" {...props}>
+      <path
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M278.5 215.6L23 471c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l74.8-74.8c7.4 4.6 15.3 8.2 23.8 10.5C200.3 452.8 270 454.5 338 409.4c12.2-8.1 5.8-25.4-8.8-25.4l-16.1 0c-5.1 0-9.2-4.1-9.2-9.2c0-4.1 2.7-7.6 6.5-8.8l97.7-29.3c3.4-1 6.4-3.1 8.4-6.1c4.4-6.4 8.6-12.9 12.6-19.6c6.2-10.3-1.5-23-13.5-23l-38.6 0c-5.1 0-9.2-4.1-9.2-9.2c0-4.1 2.7-7.6 6.5-8.8l80.9-24.3c4.6-1.4 8.4-4.8 10.2-9.3C494.5 163 507.8 86.1 511.9 36.8c.8-9.9-3-19.6-10-26.6s-16.7-10.8-26.6-10C391.5 7 228.5 40.5 137.4 131.6C57.3 211.7 56.7 302.3 71.3 356.4c2.1 7.9 12 9.6 17.8 3.8L253.6 195.8c6.2-6.2 16.4-6.2 22.6 0c5.4 5.4 6.1 13.6 2.2 19.8z"
+      />
+    </svg>
+  )
+}
