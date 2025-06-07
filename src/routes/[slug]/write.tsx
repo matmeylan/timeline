@@ -1,13 +1,15 @@
-import {Handlers, PageProps} from '$fresh/server.ts'
+import {PageProps} from 'fresh'
 import {JournalService} from '../../core/domain/journal.ts'
 import {Journal, NotFoundError} from '../../core/domain/journal.types.ts'
 import {z, ZodError} from '$zod'
 import ContentEditor from '../../islands/content-editor/content-editor.tsx'
 import {Container} from '../../components/Container.tsx'
 import {ArrowLeftIcon} from '../../components/icons.tsx'
+import {Handlers} from 'fresh/compat'
 
 export const handler: Handlers = {
-  GET(req, ctx) {
+  GET(ctx) {
+    const req = ctx.req
     const slug = ctx.params.slug
     const service = new JournalService()
     try {
@@ -15,12 +17,13 @@ export const handler: Handlers = {
       return ctx.render({journal})
     } catch (err) {
       if (err instanceof NotFoundError) {
-        return ctx.renderNotFound()
+        return ctx.throw(404)
       }
       throw err
     }
   },
-  async POST(req, ctx) {
+  async POST(ctx) {
+    const req = ctx.req
     const slug = ctx.params.slug
     const formData = await req.formData()
     const content = formData.get('content')?.toString()
@@ -31,7 +34,12 @@ export const handler: Handlers = {
     if (!result.success) {
       const service = new JournalService()
       const journal = service.getJournalBySlug(slug)
-      return ctx.render({journal, form, error: result.error}, {status: 400})
+      return ctx.render(
+        {journal, form, error: result.error},
+        {
+          status: 400,
+        },
+      )
     }
 
     const service = new JournalService()
@@ -89,8 +97,12 @@ interface Form {
 }
 
 const WriteEntrySchema = z.object({
-  content: z.string().min(1, {message: 'Please provide a slug of at least 1 character'}),
-  contentType: z.enum(['text/markdown'], {message: 'Only markdown is supported at the moment'}),
+  content: z.string().min(1, {
+    message: 'Please provide a slug of at least 1 character',
+  }),
+  contentType: z.enum(['text/markdown'], {
+    message: 'Only markdown is supported at the moment',
+  }),
 })
 type WriteEntryInput = z.infer<typeof WriteEntrySchema>
 type WriteEntryError = ZodError<WriteEntryInput>

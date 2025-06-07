@@ -1,4 +1,4 @@
-import {PageProps} from '$fresh/server.ts'
+import {PageProps} from 'fresh'
 import {Header} from '../components/Header.tsx'
 
 export default function Layout({Component}: PageProps) {

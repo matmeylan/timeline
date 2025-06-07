@@ -1,8 +1,9 @@
-import {Handlers} from '$fresh/server.ts'
 import {FileService} from '../../../../core/domain/file.ts'
+import {Handlers} from 'fresh/compat'
 
 export const handler: Handlers = {
-  async GET(req, ctx) {
+  async GET(ctx) {
+    const req = ctx.req
     const url = new URL(req.url)
     const fileKey = url.searchParams.get('fileKey')
     if (!fileKey) {

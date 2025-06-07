@@ -1,19 +1,20 @@
 {
   "lock": false,
   "tasks": {
-    "check": "deno lint && deno check **/*.ts && deno check **/*.tsx",
-    "cli": "echo \"import '\\$fresh/src/dev/cli.ts'\" | deno run --unstable -A -",
-    "manifest": "deno task cli manifest $(pwd)",
+    "check": "deno fmt --check . && deno lint . && deno check **/*.ts && deno check **/*.tsx",
     "db": "deno run -A --unstable-ffi  scripts/db/initialize.ts",
-    "start": "deno task db && deno run -A --unstable-ffi --watch=static/,src/ src/dev.ts",
+    "dev": "deno task db && deno run -A --watch=static/,routes/ src/dev.ts",
     "build": "deno run -A src/dev.ts build",
-    "preview": "deno run -A src/main.ts",
-    "update": "deno run -A -r https://fresh.deno.dev/update ."
+    "start": "deno run -A src/main.ts",
+    "update": "deno run -A -r jsr:@fresh/update ."
   },
   "lint": {"rules": {"tags": ["fresh", "recommended"]}},
   "exclude": ["**/_fresh/*"],
   "imports": {
-    "$fresh/": "https://deno.land/x/fresh@1.7.2/",
+    "fresh": "jsr:@fresh/core@^2.0.0-alpha.34",
+    "@fresh/plugin-tailwind": "jsr:@fresh/plugin-tailwind@^0.0.1-alpha.7",
+    "preact": "npm:preact@^10.26.6",
+    "@preact/signals": "npm:@preact/signals@^2.0.4",
     "$slug": "https://deno.land/x/slug@v1.1.0/mod.ts",
     "$zod": "https://deno.land/x/zod@v3.23.8/mod.ts",
     "@db/sqlite": "jsr:@db/sqlite@^0.12.0",
@@ -23,20 +24,21 @@
     "@milkdown/theme-nord": "npm:@milkdown/theme-nord@^7.10.2",
     "@nick/clsx": "jsr:@nick/clsx@^0.3.1",
     "@pakornv/fresh-plugin-tailwindcss": "jsr:@pakornv/fresh-plugin-tailwindcss@^1.0.2",
-    "@preact/signals": "https://esm.sh/*@preact/signals@1.2.2",
-    "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.5.1",
     "@std/dotenv": "jsr:@std/dotenv@^0.225.2",
     "@std/log": "jsr:@std/log@^0.224.7",
     "@std/path": "jsr:@std/path@^1.0.6",
-    "@tailwindcss/typography": "npm:@tailwindcss/typography@^0.5.15",
-    "preact": "https://esm.sh/preact@10.22.0",
-    "preact/": "https://esm.sh/preact@10.22.0/",
     "prosemirror-model": "npm:prosemirror-model@1.25.1",
     "prosemirror-state": "npm:prosemirror-state@1.4.3",
     "prosemirror-view": "npm:prosemirror-view@1.39.2",
+    "@tailwindcss/typography": "npm:@tailwindcss/typography@^0.5.15",
     "tailwindcss": "npm:tailwindcss@^4.1.2",
     "tailwindcss/": "npm:/tailwindcss@^4.1.2/"
   },
-  "compilerOptions": {"jsx": "react-jsx", "jsxImportSource": "preact"},
+  "compilerOptions": {
+    "lib": ["dom", "dom.asynciterable", "dom.iterable", "deno.ns"],
+    "jsx": "precompile",
+    "jsxImportSource": "preact",
+    "jsxPrecompileSkipElements": ["a", "img", "source", "body", "html", "head"]
+  },
   "nodeModulesDir": "auto"
 }

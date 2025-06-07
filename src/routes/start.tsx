@@ -1,11 +1,13 @@
-import {Handlers, PageProps} from '$fresh/server.ts'
+import {PageProps} from 'fresh'
 import {z, ZodError} from '$zod'
 import {JournalService} from '../core/domain/journal.ts'
 import {SlugAlreadyUsed} from '../core/domain/journal.types.ts'
 import {Container} from '../components/Container.tsx'
+import {Handlers} from 'fresh/compat'
 
 export const handler: Handlers = {
-  async POST(req, ctx) {
+  async POST(ctx) {
+    const req = ctx.req
     const formData = await req.formData()
 
     const title = formData.get('title')?.toString()
@@ -77,7 +79,9 @@ interface Form {
 }
 
 const CreateJournalSchema = z.object({
-  title: z.string().min(2, {message: 'Please provide a title of at least 2 characters'}),
+  title: z.string().min(2, {
+    message: 'Please provide a title of at least 2 characters',
+  }),
   slug: z.string().optional(),
 })
 type CreateJournalInput = z.infer<typeof CreateJournalSchema>

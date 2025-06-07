@@ -1,11 +1,13 @@
-import {Handlers} from '$fresh/server.ts'
 import {join} from '@std/path'
 import {z} from '$zod'
 import {FileUploadRequest, MAX_UPLOAD_SIZE} from '../../../../core/domain/file.types.ts'
 import {FileService} from '../../../../core/domain/file.ts'
+import {Handlers} from 'fresh/compat'
 
 export const handler: Handlers = {
-  async PUT(req, ctx) {
+  async PUT(ctx) {
+    const req = ctx.req
+
     if (!req?.body) {
       return Response.json({error: 'No body found'}, {status: 400})
     }
@@ -53,7 +55,9 @@ export class LocalFileStorage {
     const fileKey = join(namespace, prefix || '', uniqueFolder, fileName)
 
     // it's local, we don't  sign anything - this should not be used in production
-    return `/api/files/upload/local?size=${size}&contentType=${encodeURIComponent(contentType)}&fileKey=${encodeURIComponent(fileKey)}`
+    return `/api/files/upload/local?size=${size}&contentType=${encodeURIComponent(
+      contentType,
+    )}&fileKey=${encodeURIComponent(fileKey)}`
   }
 
   async uploadFile(fileKey: string, body: ReadableStream<Uint8Array>) {

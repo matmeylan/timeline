@@ -1,4 +1,4 @@
-import {Handlers, PageProps} from '$fresh/server.ts'
+import {PageProps} from 'fresh'
 import {type Journal, type JournalEntry, NotFoundError} from '../core/domain/journal.types.ts'
 import {JournalService} from '../core/domain/journal.ts'
 import {Container} from '../components/Container.tsx'
@@ -7,20 +7,24 @@ import {Prose} from '../components/Prose.tsx'
 import type {ComponentChildren} from 'preact'
 import * as markdown from '@libs/markdown'
 import {ArrowLeftIcon, WriteIcon} from '../components/icons.tsx'
+import {Handlers} from 'fresh/compat'
 
 export const handler: Handlers = {
-  async GET(req, ctx) {
+  async GET(ctx) {
+    const req = ctx.req
     const slug = ctx.params.slug
     const service = new JournalService()
     try {
       const journal = service.getJournalBySlug(slug)
-      const entries: JournalEntry[] = service.listJournalEntries(journal.id, {createdAt: 'DESC'})
+      const entries: JournalEntry[] = service.listJournalEntries(journal.id, {
+        createdAt: 'DESC',
+      })
       const renderedEntries = await renderEntries(entries) // render markdown
 
       return ctx.render({journal, entries: renderedEntries})
     } catch (err) {
       if (err instanceof NotFoundError) {
-        return ctx.renderNotFound()
+        return ctx.throw(404)
       }
       throw err
     }

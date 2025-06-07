@@ -2,7 +2,7 @@ import {useRef} from 'preact/hooks'
 import {Container} from './Container.tsx'
 import {clsx} from '@nick/clsx'
 import {JSX} from 'preact'
-import {asset} from '$fresh/runtime.ts'
+import {asset} from 'fresh/runtime'
 
 export function Header() {
   const headerRef = useRef<HTMLDivElement>(null) // React.ElementRef<'div'>

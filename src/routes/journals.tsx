@@ -4,7 +4,8 @@ import {Journal} from '../core/domain/journal.types.ts'
 import {Container} from '../components/Container.tsx'
 
 export const handler: Handlers = {
-  GET(req, ctx) {
+  GET(ctx) {
+    const req = ctx.req
     const service = new JournalService()
     const journals: Journal[] = service.listJournals()
     return ctx.render({

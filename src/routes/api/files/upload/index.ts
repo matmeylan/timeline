@@ -1,9 +1,10 @@
 import {z} from '$zod'
-import {Handlers} from '$fresh/server.ts'
 import {FileService} from '../../../../core/domain/file.ts'
+import {Handlers} from 'fresh/compat'
 
 export const handler: Handlers = {
-  async POST(req, ctx) {
+  async POST(ctx) {
+    const req = ctx.req
     const body = await req.json()
     const res = GenerateUploadSignedUrlRequest.safeParse(body)
     if (!res.success) {
