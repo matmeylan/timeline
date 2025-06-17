@@ -1,0 +1,18 @@
+datasource db {
+  url      = "file://../data/dev-sqlite2.db"
+  provider = "sqlite"
+}
+
+generator client {
+  provider = "prisma-client"
+  runtime = "deno"
+  previewFeatures = ["driverAdapters"]
+  output   = "../src/__generated__/prisma"
+}
+
+model Journal {
+   id      String      @id
+  slug   String   @unique
+  title String
+  createdAt DateTime
+}

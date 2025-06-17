@@ -7,13 +7,13 @@ import {
   StartJournal,
   WriteJournalEntry,
 } from './journal.types.ts'
-import {isUniqueConstraintError, SqliteClient} from '../database/sqlite.ts'
+import {getClient} from '../database/sqlite2.ts'
 
 // reserved slugs at the same URL path level
 const reservedSlugs = ['start', 'journals']
 
 export class JournalService {
-  constructor(private readonly client: SqliteClient = new SqliteClient()) {}
+  constructor(private readonly client = getClient()) {}
 
   startJournal(input: StartJournal): Journal {
     const slug = generateSlug(input.slug || input.title)
@@ -28,31 +28,33 @@ export class JournalService {
       createdAt: new Date(),
     }
 
-    const stmt = this.client.db.prepare(
-      `INSERT INTO journal(id, slug, title, createdAt)
-       values (:id, :slug, :title, :createdAt)`,
-    )
+    this.client.journal.create({
+      data: journal,
+    })
 
-    try {
-      stmt.run(journal)
-    } catch (err) {
-      if (isUniqueConstraintError(err)) {
-        throw new SlugAlreadyUsed(slug)
-      }
-      throw err
-    }
+    // TODO: handle unique error
+    // try {
+    //   stmt.run(journal)
+    // } catch (err) {
+    //   if (isUniqueConstraintError(err)) {
+    //     throw new SlugAlreadyUsed(slug)
+    //   }
+    //   throw err
+    // }
 
     return journal
   }
 
-  listJournals(): Journal[] {
-    const stmt = this.client.db.prepare(`SELECT * FROM journal`)
-    return stmt.all<Journal>()
+  listJournals(): Promise<Journal[]> {
+    return this.client.journal.findMany()
   }
 
-  getJournalBySlug(slug: string): Journal {
-    const stmt = this.client.db.prepare(`SELECT * FROM journal where slug = :slug`)
-    const journal = stmt.get<Journal>({slug})
+  async getJournalBySlug(slug: string): Promise<Journal> {
+    const journal = await this.client.journal.findFirst({
+      where: {
+        slug,
+      },
+    })
     if (!journal) {
       throw new NotFoundError(`Journal ${slug} was not found`)
     }
@@ -67,21 +69,22 @@ export class JournalService {
       contentType: createEntry.contentType,
       journalId,
     }
-    const stmt = this.client.db.prepare(
-      `INSERT INTO journal_entry (id, createdAt, content, contentType, journalId)
-       VALUES (:id, :createdAt, :content, :contentType, :journalId)`,
-    )
-    stmt.run(entry)
+    // const stmt = this.client.db.prepare(
+    //   `INSERT INTO journal_entry (id, createdAt, content, contentType, journalId)
+    //    VALUES (:id, :createdAt, :content, :contentType, :journalId)`,
+    // )
+    // stmt.run(entry)
     return entry
   }
 
   listJournalEntries(journalId: string, order: {createdAt: 'DESC' | 'ASC'}): JournalEntry[] {
-    const stmt = this.client.db.prepare(
-      `SELECT *
-       FROM journal_entry
-       WHERE journalId = :journalId
-       ORDER BY createdAt ${order.createdAt}`,
-    )
-    return stmt.all<JournalEntry>({journalId})
+    // const stmt = this.client.db.prepare(
+    //   `SELECT *
+    //    FROM journal_entry
+    //    WHERE journalId = :journalId
+    //    ORDER BY createdAt ${order.createdAt}`,
+    // )
+    // return stmt.all<JournalEntry>({journalId})
+    return []
   }
 }

@@ -17,3 +17,5 @@ data
 # Fresh
 _fresh
 
+
+/src/__generated__/prisma

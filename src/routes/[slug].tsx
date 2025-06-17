@@ -13,7 +13,7 @@ export const handler: Handlers = {
     const slug = ctx.params.slug
     const service = new JournalService()
     try {
-      const journal = service.getJournalBySlug(slug)
+      const journal = await service.getJournalBySlug(slug)
       const entries: JournalEntry[] = service.listJournalEntries(journal.id, {createdAt: 'DESC'})
       const renderedEntries = await renderEntries(entries) // render markdown
 

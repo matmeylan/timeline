@@ -22,7 +22,7 @@ export const handler: Handlers = {
 
     const service = new JournalService()
     try {
-      const journal = service.startJournal(result.data)
+      const journal = await service.startJournal(result.data)
       const headers = new Headers()
       headers.set('location', `/${journal.slug}`)
       return new Response(null, {status: 303, headers})

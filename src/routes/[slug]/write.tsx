@@ -7,11 +7,11 @@ import {Container} from '../../components/Container.tsx'
 import {ArrowLeftIcon} from '../../components/icons.tsx'
 
 export const handler: Handlers = {
-  GET(req, ctx) {
+  async GET(req, ctx) {
     const slug = ctx.params.slug
     const service = new JournalService()
     try {
-      const journal = service.getJournalBySlug(slug)
+      const journal = await service.getJournalBySlug(slug)
       return ctx.render({journal})
     } catch (err) {
       if (err instanceof NotFoundError) {
@@ -30,12 +30,12 @@ export const handler: Handlers = {
 
     if (!result.success) {
       const service = new JournalService()
-      const journal = service.getJournalBySlug(slug)
+      const journal = await service.getJournalBySlug(slug)
       return ctx.render({journal, form, error: result.error}, {status: 400})
     }
 
     const service = new JournalService()
-    const journal = service.getJournalBySlug(slug)
+    const journal = await service.getJournalBySlug(slug)
     service.writeEntry(journal.id, result.data)
 
     const headers = new Headers()
