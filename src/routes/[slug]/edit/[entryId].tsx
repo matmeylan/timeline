@@ -1,5 +1,6 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
 import {z, ZodError} from '$zod'
+import {Button} from '../../../components/Button.tsx'
 import {Container} from '../../../components/Container.tsx'
 import {ArrowLeftIcon} from '../../../components/icons.tsx'
 import {JournalService} from '../../../core/domain/journal.ts'
@@ -71,7 +72,11 @@ export default function WriteEntryPage(props: PageProps<EditEntryState>) {
             <ContentEditor inputName="content" content={form?.content} />
             <div class="text-red-500">{errors?.fieldErrors.content}</div>
             <div class="text-red-500">{errors?.fieldErrors.contentType}</div>
-            <button type="submit">Edit</button>
+            <div class="flex flex-row items-center justify-center">
+              <Button.Hero type="submit" aria-label="Edit">
+                Edit
+              </Button.Hero>
+            </div>
           </form>
         </div>
       </div>

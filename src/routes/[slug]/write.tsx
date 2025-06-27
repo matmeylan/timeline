@@ -5,9 +5,10 @@ import {z, ZodError} from '$zod'
 import ContentEditor from '../../islands/content-editor/content-editor.tsx'
 import {Container} from '../../components/Container.tsx'
 import {ArrowLeftIcon} from '../../components/icons.tsx'
+import {Button} from '../../components/Button.tsx'
 
 export const handler: Handlers = {
-  GET(req, ctx) {
+  GET(_req, ctx) {
     const slug = ctx.params.slug
     const service = new JournalService()
     try {
@@ -65,10 +66,13 @@ export default function WriteEntryPage(props: PageProps<WriteEntryState>) {
           <form method="post" class="mt-8 flex flex-1 flex-col gap-1">
             <input type="hidden" value="text/markdown" id="contentType" name="contentType" />
             <ContentEditor inputName="content" content={form?.content} />
-            <div>{errors?.fieldErrors.content}</div>
-            <div>{errors?.fieldErrors.contentType}</div>
-
-            <button type="submit">Create</button>
+            <div class="text-red-500">{errors?.fieldErrors.content}</div>
+            <div class="text-red-500">{errors?.fieldErrors.contentType}</div>
+            <div class="flex flex-row items-center justify-center">
+              <Button.Hero type="submit" aria-label="Edit">
+                Create
+              </Button.Hero>
+            </div>
           </form>
         </div>
       </div>

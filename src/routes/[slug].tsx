@@ -7,6 +7,7 @@ import {Prose} from '../components/Prose.tsx'
 import type {ComponentChildren} from 'preact'
 import * as markdown from '@libs/markdown'
 import {ArrowLeftIcon, WriteIcon} from '../components/icons.tsx'
+import {Button} from '../components/Button.tsx'
 
 export const handler: Handlers = {
   async GET(req, ctx) {
@@ -79,18 +80,10 @@ function JournalLayout(props: PageProps<JournalState> & {children: ComponentChil
               <time dateTime={createdAt} class="col-span-5 row-start-2 text-base text-zinc-600 dark:text-zinc-400">
                 Started on {createdAt}
               </time>
-              <div class="col-span-1 self-center">
-                <a
-                  type="button"
-                  href={'/' + journal.slug + '/write'}
-                  aria-label="Write"
-                  class="group inline-flex flex-row gap-2 rounded-xl bg-white/90 px-3 py-2 shadow-lg ring-1 shadow-zinc-800/5 ring-zinc-900/5 backdrop-blur-sm transition dark:bg-zinc-800/90 dark:ring-white/10 dark:hover:ring-white/20"
-                >
-                  <WriteIcon class="h-6 w-6 fill-zinc-500 transition group-hover:fill-zinc-700 group-hover:stroke-zinc-200 [@media(prefers-color-scheme:dark)]:fill-teal-500 [@media(prefers-color-scheme:dark)]:stroke-teal-50 [@media(prefers-color-scheme:dark)]:group-hover:fill-teal-600 [@media(prefers-color-scheme:dark)]:group-hover:stroke-teal-50" />
-                  <label class="cursor-pointer text-zinc-500 group-hover:text-zinc-700 [@media(prefers-color-scheme:dark)]:text-teal-500 [@media(prefers-color-scheme:dark)]:group-hover:text-teal-600">
-                    Write
-                  </label>
-                </a>
+              <div class="col-span-1 row-span-2 self-center">
+                <Button.Primary as="a" href={'/' + journal.slug + '/write'} aria-label="Write" icon={<WriteIcon />}>
+                  Write
+                </Button.Primary>
               </div>
             </header>
           </section>
@@ -133,15 +126,12 @@ function JournalEntry({
   journal: Journal
 }) {
   return (
-    <article class="md:grid md:grid-cols-4 md:items-start" id={entry.id}>
+    <article class="group md:grid md:grid-cols-4 md:items-start" id={entry.id}>
       <div class="flex flex-col gap-4">
         <time class="text-sm text-zinc-400 dark:text-zinc-500">{date.format(new Date(entry.createdAt))}</time>
-        <a
-          href={'/' + journal.slug + '/edit/' + entry.id}
-          class="text-sm font-medium text-teal-500 hover:text-teal-600 hover:underline"
-        >
+        <Button.Secondary as="a" href={'/' + journal.slug + '/edit/' + entry.id}>
           Edit
-        </a>
+        </Button.Secondary>
       </div>
       <div class="md:col-span-3">
         <Prose dangerouslySetInnerHTML={{__html: entry.htmlContent}} />
