@@ -3,6 +3,7 @@
 // This file is automatically updated during development when running `dev.ts`.
 
 import * as $_slug_ from "./routes/[slug].tsx";
+import * as $_slug_edit_entryId_ from "./routes/[slug]/edit/[entryId].tsx";
 import * as $_slug_write from "./routes/[slug]/write.tsx";
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
@@ -19,6 +20,7 @@ import type { Manifest } from "$fresh/server.ts";
 const manifest = {
   routes: {
     "./routes/[slug].tsx": $_slug_,
+    "./routes/[slug]/edit/[entryId].tsx": $_slug_edit_entryId_,
     "./routes/[slug]/write.tsx": $_slug_write,
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,

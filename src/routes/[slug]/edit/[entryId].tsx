@@ -1,18 +1,21 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
-import {JournalService} from '../../core/domain/journal.ts'
-import {Journal, NotFoundError} from '../../core/domain/journal.types.ts'
 import {z, ZodError} from '$zod'
-import ContentEditor from '../../islands/content-editor/content-editor.tsx'
-import {Container} from '../../components/Container.tsx'
-import {ArrowLeftIcon} from '../../components/icons.tsx'
+import {Container} from '../../../components/Container.tsx'
+import {ArrowLeftIcon} from '../../../components/icons.tsx'
+import {JournalService} from '../../../core/domain/journal.ts'
+import {Journal, JournalEntry, NotFoundError} from '../../../core/domain/journal.types.ts'
+import ContentEditor from '../../../islands/content-editor/content-editor.tsx'
 
 export const handler: Handlers = {
   GET(req, ctx) {
     const slug = ctx.params.slug
+    const entryId = ctx.params.entryId
     const service = new JournalService()
     try {
       const journal = service.getJournalBySlug(slug)
-      return ctx.render({journal})
+      const entry = service.getJournalEntry(journal.id, entryId)
+      const form: Form = {content: entry.content, contentType: entry.contentType}
+      return ctx.render({journal, form, entry})
     } catch (err) {
       if (err instanceof NotFoundError) {
         return ctx.renderNotFound()
@@ -22,11 +25,12 @@ export const handler: Handlers = {
   },
   async POST(req, ctx) {
     const slug = ctx.params.slug
+    const entryId = ctx.params.entryId
     const formData = await req.formData()
     const content = formData.get('content')?.toString()
     const contentType = formData.get('contentType')?.toString()
-    const form = {content, contentType}
-    const result = WriteEntrySchema.safeParse(form) // TODO: sanitize markdown
+    const form: Form = {content, contentType}
+    const result = EditEntrySchema.safeParse(form) // TODO: sanitize markdown
     const service = new JournalService()
 
     if (!result.success) {
@@ -35,15 +39,15 @@ export const handler: Handlers = {
     }
 
     const journal = service.getJournalBySlug(slug)
-    service.writeEntry(journal.id, result.data)
+    service.editEntry(journal.id, entryId, result.data)
 
     const headers = new Headers()
-    headers.set('location', `/${journal.slug}`)
+    headers.set('location', `/${journal.slug}#${entryId}`)
     return new Response(null, {status: 303, headers})
   },
 }
 
-export default function WriteEntryPage(props: PageProps<WriteEntryState>) {
+export default function WriteEntryPage(props: PageProps<EditEntryState>) {
   const {journal, form, error} = props.data
   const errors = error?.flatten()
 
@@ -60,15 +64,14 @@ export default function WriteEntryPage(props: PageProps<WriteEntryState>) {
             <ArrowLeftIcon class="h-4 w-4 stroke-zinc-500 transition group-hover:stroke-zinc-700 dark:stroke-zinc-500 dark:group-hover:stroke-zinc-400" />
           </a>
           <header>
-            <h1 class="text-4xl font-bold">New entry in {journal.title}</h1>
+            <h1 class="text-4xl font-bold">Edit entry in {journal.title}</h1>
           </header>
           <form method="post" class="mt-8 flex flex-1 flex-col gap-1">
             <input type="hidden" value="text/markdown" id="contentType" name="contentType" />
             <ContentEditor inputName="content" content={form?.content} />
-            <div>{errors?.fieldErrors.content}</div>
-            <div>{errors?.fieldErrors.contentType}</div>
-
-            <button type="submit">Create</button>
+            <div class="text-red-500">{errors?.fieldErrors.content}</div>
+            <div class="text-red-500">{errors?.fieldErrors.contentType}</div>
+            <button type="submit">Edit</button>
           </form>
         </div>
       </div>
@@ -76,20 +79,21 @@ export default function WriteEntryPage(props: PageProps<WriteEntryState>) {
   )
 }
 
-interface WriteEntryState {
+interface EditEntryState {
   journal: Journal
-  form?: Form
-  error?: WriteEntryError
+  entry: JournalEntry
+  form: Form
+  error?: EditEntryError
 }
 
 interface Form {
-  title?: string
   content?: string
+  contentType?: string
 }
 
-const WriteEntrySchema = z.object({
+const EditEntrySchema = z.object({
   content: z.string().min(1, {message: 'Content should not be empty'}),
   contentType: z.enum(['text/markdown'], {message: 'Only markdown is supported at the moment'}),
 })
-type WriteEntryInput = z.infer<typeof WriteEntrySchema>
-type WriteEntryError = ZodError<WriteEntryInput>
+type EditEntryInput = z.infer<typeof EditEntrySchema>
+type EditEntryError = ZodError<EditEntryInput>

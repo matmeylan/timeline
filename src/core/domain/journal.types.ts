@@ -26,6 +26,11 @@ export interface JournalEntry extends Model {
   journalId: string // reference to journal table
 }
 
+export interface EditJournalEntry {
+  content: string
+  contentType: string
+}
+
 export interface Zodable {
   toZod(): ZodError
 }

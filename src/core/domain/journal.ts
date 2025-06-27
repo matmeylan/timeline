@@ -6,6 +6,7 @@ import {
   SlugAlreadyUsed,
   StartJournal,
   WriteJournalEntry,
+  EditJournalEntry,
 } from './journal.types.ts'
 import {isUniqueConstraintError, SqliteClient} from '../database/sqlite.ts'
 
@@ -75,6 +76,15 @@ export class JournalService {
     return entry
   }
 
+  editEntry(journalId: string, entryId: string, edit: EditJournalEntry): JournalEntry {
+    const stmt = this.client.db.prepare(`
+      UPDATE journal_entry SET content = :content, contentType = :contentType 
+      WHERE id = :entryId AND journalId = :journalId
+    `)
+    stmt.run({journalId, entryId, content: edit.content, contentType: edit.contentType})
+    return this.getJournalEntry(journalId, entryId)
+  }
+
   listJournalEntries(journalId: string, order: {createdAt: 'DESC' | 'ASC'}): JournalEntry[] {
     const stmt = this.client.db.prepare(
       `SELECT *
@@ -83,5 +93,16 @@ export class JournalService {
        ORDER BY createdAt ${order.createdAt}`,
     )
     return stmt.all<JournalEntry>({journalId})
+  }
+
+  getJournalEntry(journalId: string, entryId: string): JournalEntry {
+    const stmt = this.client.db.prepare(
+      `SELECT *
+       FROM journal_entry
+       WHERE journalId = :journalId AND id = :entryId`,
+    )
+    const entry = stmt.get<JournalEntry>({journalId, entryId})
+    if (!entry) throw new Error(`Entry ${entryId} not found in journal ${journalId}`)
+    return entry
   }
 }

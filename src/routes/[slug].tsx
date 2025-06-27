@@ -102,7 +102,7 @@ function JournalLayout(props: PageProps<JournalState> & {children: ComponentChil
 }
 
 function JournalTimeline(props: JournalState) {
-  const {entries} = props
+  const {entries, journal} = props
   if (entries.length === 0) {
     return <p>No entries yet</p>
   } else {
@@ -115,7 +115,7 @@ function JournalTimeline(props: JournalState) {
       <>
         <div class="flex max-w-3xl flex-col space-y-16">
           {entries.map(entry => (
-            <JournalEntry key={entry.id} entry={entry} date={entryDateFormat} />
+            <JournalEntry key={entry.id} entry={entry} date={entryDateFormat} journal={journal} />
           ))}
         </div>
       </>
@@ -123,10 +123,26 @@ function JournalTimeline(props: JournalState) {
   }
 }
 
-function JournalEntry({entry, date}: {entry: RenderedJournalEntry; date: Intl.DateTimeFormat}) {
+function JournalEntry({
+  entry,
+  date,
+  journal,
+}: {
+  entry: RenderedJournalEntry
+  date: Intl.DateTimeFormat
+  journal: Journal
+}) {
   return (
-    <article class="md:grid md:grid-cols-4 md:items-start">
-      <time class="text-sm text-zinc-400 dark:text-zinc-500">{date.format(new Date(entry.createdAt))}</time>
+    <article class="md:grid md:grid-cols-4 md:items-start" id={entry.id}>
+      <div class="flex flex-col gap-4">
+        <time class="text-sm text-zinc-400 dark:text-zinc-500">{date.format(new Date(entry.createdAt))}</time>
+        <a
+          href={'/' + journal.slug + '/edit/' + entry.id}
+          class="text-sm font-medium text-teal-500 hover:text-teal-600 hover:underline"
+        >
+          Edit
+        </a>
+      </div>
       <div class="md:col-span-3">
         <Prose dangerouslySetInnerHTML={{__html: entry.htmlContent}} />
       </div>
