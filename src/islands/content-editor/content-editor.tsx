@@ -3,7 +3,7 @@ import {MAX_UPLOAD_SIZE} from '../../core/domain/file.types.ts'
 import {useEffect, useRef, useState} from 'preact/hooks'
 import {IS_BROWSER} from '$fresh/runtime.ts'
 import {Crepe} from '@milkdown/crepe'
-import {RefObject} from 'npm:@types/react@18.3.20'
+import type {RefObject} from 'npm:@types/react@18.3.20'
 
 export interface ContentEditorProps {
   content?: string
