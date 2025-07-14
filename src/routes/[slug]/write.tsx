@@ -1,7 +1,7 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
 import {JournalService} from '../../core/domain/journal.ts'
 import {Journal, NotFoundError} from '../../core/domain/journal.types.ts'
-import {z, ZodError} from '$zod'
+import {z, ZodError} from '@zod/zod'
 import ContentEditor from '../../islands/content-editor/content-editor.tsx'
 import {Container} from '../../components/Container.tsx'
 import {ArrowLeftIcon} from '../../components/icons.tsx'

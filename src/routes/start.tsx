@@ -1,5 +1,5 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
-import {z, ZodError} from '$zod'
+import {z, ZodError} from '@zod/zod'
 import {JournalService} from '../core/domain/journal.ts'
 import {SlugAlreadyUsed} from '../core/domain/journal.types.ts'
 import {Container} from '../components/Container.tsx'

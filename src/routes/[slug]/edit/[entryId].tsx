@@ -1,5 +1,5 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
-import {z, ZodError} from '$zod'
+import {z, ZodError} from '@zod/zod'
 import {Button} from '../../../components/Button.tsx'
 import {Container} from '../../../components/Container.tsx'
 import {ArrowLeftIcon} from '../../../components/icons.tsx'

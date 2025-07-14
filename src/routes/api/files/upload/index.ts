@@ -1,4 +1,4 @@
-import {z} from '$zod'
+import {z} from '@zod/zod'
 import {Handlers} from '$fresh/server.ts'
 import {FileService} from '../../../../core/domain/file.ts'
 

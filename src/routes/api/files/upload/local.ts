@@ -1,6 +1,6 @@
 import {Handlers} from '$fresh/server.ts'
 import {join} from '@std/path'
-import {z} from '$zod'
+import {z} from '@zod/zod'
 import {FileUploadRequest, MAX_UPLOAD_SIZE} from '../../../../core/domain/file.types.ts'
 import {FileService} from '../../../../core/domain/file.ts'
 

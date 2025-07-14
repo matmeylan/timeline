@@ -1,5 +1,6 @@
-import {ZodError} from '$zod'
+import {ZodError} from '@zod/zod'
 import {Model} from '../database/model.types.ts'
+import {Zodable} from '../serde/zod.ts'
 
 export interface StartJournal {
   title: string
@@ -31,23 +32,13 @@ export interface EditJournalEntry {
   contentType: string
 }
 
-export interface Zodable {
-  toZod(): ZodError
-}
-
 export class SlugAlreadyUsed extends Error implements Zodable {
   constructor(readonly slug: string) {
     super(`Slug "${slug}" is already used`)
   }
 
   toZod() {
-    return new ZodError([
-      {
-        code: 'custom',
-        path: ['slug'],
-        message: this.message,
-      },
-    ])
+    return new ZodError([{input: this.slug, code: 'custom', path: ['slug'], message: this.message}])
   }
 }
 
