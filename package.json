@@ -4,7 +4,12 @@
   },
   "dependencies": {
     "@milkdown/kit": "^7.10.2",
+    "@node-rs/argon2": "^2.0.2",
+    "@oslojs/binary": "^1.0.0",
+    "@oslojs/crypto": "^1.0.1",
+    "@oslojs/encoding": "^1.1.0",
     "@tailwindcss/typography": "^0.5.16",
+    "date-fns": "^4.1.0",
     "tailwindcss": "^4.1.2"
   },
   "devDependencies": {

@@ -26,6 +26,7 @@
     "@preact/signals": "https://esm.sh/*@preact/signals@1.2.2",
     "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.5.1",
     "@std/dotenv": "jsr:@std/dotenv@^0.225.2",
+    "@std/http": "jsr:@std/http@^1.0.19",
     "@std/log": "jsr:@std/log@^0.224.7",
     "@std/path": "jsr:@std/path@^1.0.6",
     "@tailwindcss/typography": "npm:@tailwindcss/typography@^0.5.15",
