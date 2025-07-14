@@ -1,6 +1,17 @@
+import {Handlers, PageProps} from '$fresh/server.ts'
 import {Container} from '../components/Container.tsx'
+import {UserService} from '../core/domain/user.ts'
+import {User} from '../core/domain/user.types.ts'
+import {RouteState} from '../core/route/state.ts'
 
-export default function Home() {
+export const handler: Handlers<HomeState, RouteState> = {
+  GET(req, ctx) {
+    return ctx.render({user: ctx.state.user ? ctx.state.user : undefined})
+  },
+}
+
+export default function Home(props: PageProps<HomeState>) {
+  const {user} = props.data
   return (
     <Container class="mt-16 lg:mt-32">
       <img
@@ -11,7 +22,13 @@ export default function Home() {
         alt="the Fresh logo: a sliced lemon dripping with juice"
       />
       <h1 class="text-4xl font-bold">
-        Welcome to <span class="inline-block rotate-6">Journals</span>
+        {user ? (
+          <> Welcome, {user.email}</>
+        ) : (
+          <>
+            Welcome to <span class="inline-block rotate-6">Journals</span>
+          </>
+        )}
       </h1>
       <menu class="mt-4">
         <li>
@@ -21,6 +38,37 @@ export default function Home() {
           <a href="/journals">See your journals</a>
         </li>
       </menu>
+      {user ? <UserNav user={user} /> : <AnonymousNav />}
     </Container>
   )
+}
+
+function UserNav(props: {user: User}) {
+  return (
+    <>
+      <pre>{JSON.stringify(props, null, 2)}</pre>
+      <div class="mt-4 flex flex-row gap-2">
+        <a href="/signout" class="underline">
+          Sign out
+        </a>
+      </div>
+    </>
+  )
+}
+
+function AnonymousNav() {
+  return (
+    <div class="flex flex-row gap-2">
+      <a href="/login" class="underline">
+        Login
+      </a>
+      <a href="/signup" class="underline">
+        Register
+      </a>
+    </div>
+  )
+}
+
+interface HomeState {
+  user?: User
 }
