@@ -54,7 +54,7 @@ export class WeakPasswordError extends Error implements Zodable<{password: strin
 
 export class EmailAlreadyUsedError extends Error implements Zodable<SignupSchemaInput> {
   constructor(private readonly email: string) {
-    super(`Email ${email} already exists.`)
+    super(`Email ${email} is already linked to an account. Did you mean to login ?`)
   }
 
   toZod() {
