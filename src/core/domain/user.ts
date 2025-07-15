@@ -52,7 +52,7 @@ export class UserService {
       registeredSecurityKey: false,
       registered2FA: false,
     }
-    using createUserStmt = this.client.db.prepare(
+    const createUserStmt = this.client.db.prepare(
       `INSERT INTO user (id, email, password_hash, recovery_code)
       VALUES (:id, :email, :passwordHash, :recoveryCode)`,
     )
@@ -265,7 +265,7 @@ export class UserService {
   }
 
   getUserByEmail(email: string): User {
-    using stmt = this.client.db.prepare(
+    const stmt = this.client.db.prepare(
       `SELECT user.id, user.email, user.email_verified, IIF(totp_credential.id IS NOT NULL, 1, 0), IIF(passkey_credential.id IS NOT NULL, 1, 0), IIF(security_key_credential.id IS NOT NULL, 1, 0) FROM user
         LEFT JOIN totp_credential ON user.id = totp_credential.user_id
         LEFT JOIN passkey_credential ON user.id = passkey_credential.user_id
@@ -302,7 +302,7 @@ export class UserService {
   }
 
   async validateUserPassword(user: User, password: string) {
-    using getPasswordStmt = this.client.db.prepare('SELECT password_hash FROM user WHERE id = :userId')
+    const getPasswordStmt = this.client.db.prepare('SELECT password_hash FROM user WHERE id = :userId')
     const res = getPasswordStmt.get<{password_hash: string}>({userId: user.id})
     if (!res) {
       throw new UserDoesNotExistError(user.email)
