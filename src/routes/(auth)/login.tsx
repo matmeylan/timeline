@@ -17,14 +17,16 @@ export const handler: Handlers<LoginState, RouteState> = {
     if (user) {
       const headers = new Headers()
       if (user.emailVerified) {
-        headers.set('location', `/login`)
+        headers.set('location', `/`)
       } else {
         headers.set('location', `/verify`)
       }
       return new Response(null, {status: 303, headers})
     }
 
-    return ctx.render()
+    const url = new URL(req.url)
+    const email = decodeURIComponent(url.searchParams.get('email') || '')
+    return ctx.render({form: {email}})
   },
   async POST(req, ctx) {
     // TODO: Assumes X-Forwarded-For is always included.
@@ -116,9 +118,9 @@ export default function LoginPage(props: PageProps<LoginState>) {
         <button type="submit">Login</button>
         {rateLimitError && <p>{rateLimitError}</p>}
       </form>
-      <a href="/signup" class="block">
-        Sign up
-      </a>
+      <div>
+        <a href={'/signup?email=' + encodeURIComponent(form?.email || '')}>Sign up</a>
+      </div>
     </Container>
   )
 }

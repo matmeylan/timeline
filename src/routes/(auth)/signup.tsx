@@ -7,10 +7,27 @@ import {setEmailVerificationRequestCookie} from '../../core/auth/email-verificat
 import {setSessionTokenCookie} from '../../core/auth/session.ts'
 import {EMAIL_VALIDATION_PATTERN} from '../../core/serde/email.ts'
 import {EmailAlreadyUsedError} from '../../core/domain/user.types.ts'
+import {RouteState} from '../../core/route/state.ts'
 
 const ipBucket = new RefillingTokenBucket<string>(3, 10)
 
-export const handler: Handlers = {
+export const handler: Handlers<SignupState, RouteState> = {
+  GET(req, ctx) {
+    const {user} = ctx.state
+    if (user) {
+      const headers = new Headers()
+      if (user.emailVerified) {
+        headers.set('location', `/`)
+      } else {
+        headers.set('location', `/verify`)
+      }
+      return new Response(null, {status: 303, headers})
+    }
+
+    const url = new URL(req.url)
+    const email = decodeURIComponent(url.searchParams.get('email') || '')
+    return ctx.render({form: {email}})
+  },
   async POST(req, ctx) {
     const formData = await req.formData()
     const email = formData.get('email')?.toString()
@@ -88,9 +105,9 @@ export default function SignUp(props: PageProps<SignupState>) {
         <button type="submit">Sign up</button>
         {rateLimitError && <p>{rateLimitError}</p>}
       </form>
-      <a href="/signin" class="block">
-        Sign in
-      </a>
+      <div>
+        <a href={'/login?email=' + encodeURIComponent(form?.email || '')}>Login</a>
+      </div>
     </Container>
   )
 }
