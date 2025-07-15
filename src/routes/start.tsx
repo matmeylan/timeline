@@ -3,8 +3,9 @@ import {z, ZodError} from '@zod/zod'
 import {JournalService} from '../core/domain/journal.ts'
 import {SlugAlreadyUsed} from '../core/domain/journal.types.ts'
 import {Container} from '../components/Container.tsx'
+import {RouteState} from '../core/route/state.ts'
 
-export const handler: Handlers = {
+export const handler: Handlers<CreateJournalState, RouteState> = {
   async POST(req, ctx) {
     const formData = await req.formData()
 
@@ -47,8 +48,9 @@ export const handler: Handlers = {
 
 export default function CreateJournal(props: PageProps<CreateJournalState>) {
   const {error, form} = props.data || {}
-  const errors = error?.flatten()
+  const errors = error ? z.flattenError(error) : undefined
   const slugHint = "When left empty, we'll generate a slug for you"
+
   return (
     <Container class="mt-16 lg:mt-32">
       <h1 class="text-4xl font-bold">New journal</h1>
@@ -80,5 +82,5 @@ const CreateJournalSchema = z.object({
   title: z.string().min(2, {message: 'Please provide a title of at least 2 characters'}),
   slug: z.string().optional(),
 })
-type CreateJournalInput = z.infer<typeof CreateJournalSchema>
+export type CreateJournalInput = z.infer<typeof CreateJournalSchema>
 type CreateJournalError = ZodError<CreateJournalInput>

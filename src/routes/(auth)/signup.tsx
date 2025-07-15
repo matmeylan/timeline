@@ -5,6 +5,8 @@ import {RefillingTokenBucket} from '../../core/auth/rate-limit.ts'
 import {UserService} from '../../core/domain/user.ts'
 import {setEmailVerificationRequestCookie} from '../../core/auth/email-verification.ts'
 import {setSessionTokenCookie} from '../../core/auth/session.ts'
+import {EMAIL_VALIDATION_PATTERN} from '../../core/serde/email.ts'
+import {EmailAlreadyUsedError} from '../../core/domain/user.types.ts'
 
 const ipBucket = new RefillingTokenBucket<string>(3, 10)
 
@@ -32,17 +34,24 @@ export const handler: Handlers = {
     }
 
     const userService = new UserService()
-    const {emailVerificationRequest, session, sessionToken} = await userService.createUser(
-      result.data.email,
-      result.data.password,
-    )
+    try {
+      const {emailVerificationRequest, session, sessionToken} = await userService.createUser(
+        result.data.email,
+        result.data.password,
+      )
 
-    const headers = new Headers()
-    setEmailVerificationRequestCookie(headers, emailVerificationRequest)
-    setSessionTokenCookie(headers, sessionToken, session.expiresAt)
+      const headers = new Headers()
+      setEmailVerificationRequestCookie(headers, emailVerificationRequest)
+      setSessionTokenCookie(headers, sessionToken, session.expiresAt)
 
-    headers.set('location', `/auth/verify`)
-    return new Response(null, {status: 302, headers})
+      headers.set('location', `/verify`)
+      return new Response(null, {status: 302, headers})
+    } catch (err) {
+      if (err instanceof EmailAlreadyUsedError) {
+        return ctx.render({error: err.toZod(), form}, {status: 400})
+      }
+      throw err
+    }
   },
 }
 
@@ -79,7 +88,7 @@ export default function SignUp(props: PageProps<SignupState>) {
         <button type="submit">Sign up</button>
         {rateLimitError && <p>{rateLimitError}</p>}
       </form>
-      <a href="/auth/login" class="block">
+      <a href="/signin" class="block">
         Sign in
       </a>
     </Container>
@@ -98,8 +107,8 @@ interface Form {
 }
 
 const SignupSchema = z.object({
-  email: z.email({pattern: /^.+@.+\..+$/}).max(256),
+  email: z.email({pattern: EMAIL_VALIDATION_PATTERN}).max(256),
   password: z.string().min(8).max(64),
 })
-type SignupSchemaInput = z.infer<typeof SignupSchema>
+export type SignupSchemaInput = z.infer<typeof SignupSchema>
 type SignupSchemaError = ZodError<SignupSchemaInput>

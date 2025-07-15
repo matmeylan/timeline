@@ -1,5 +1,4 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
-import {isErrored} from 'node:stream'
 import {Container} from '../../components/Container.tsx'
 import {
   deleteEmailVerificationCookie,
@@ -22,7 +21,7 @@ export const handler: Handlers<VerifyEmailState, RouteState> = {
     const user = ctx.state.user
     if (!user) {
       const headers = new Headers()
-      headers.set('location', `/auth/login`)
+      headers.set('location', `/login`)
       return new Response(null, {status: 303, headers})
     }
     if (user.emailVerified) {
@@ -46,7 +45,7 @@ export const handler: Handlers<VerifyEmailState, RouteState> = {
     const user = ctx.state.user
     if (!user) {
       const headers = new Headers()
-      headers.set('location', `/auth/login`)
+      headers.set('location', `/login`)
       return new Response(null, {status: 303, headers})
     }
     if (!bucket.check(user.id, 1)) {
@@ -78,6 +77,8 @@ export const handler: Handlers<VerifyEmailState, RouteState> = {
     } catch (err) {
       if (err instanceof EmailVerificationNotFoundError) {
         return ctx.render({email: user.email, error: 'Invalid code'}, {status: 401})
+      } else if (err instanceof InvalidEmailVerificationCodeError) {
+        return ctx.render({email: user.email, error: 'The code you have entered is incorrect.'}, {status: 400})
       } else if (err instanceof EmailVerificationCodeExpiredError) {
         // send new code
         const newRequest = userService.createEmailVerificationRequest(user.id, user.email)
@@ -86,8 +87,6 @@ export const handler: Handlers<VerifyEmailState, RouteState> = {
           {email: user.email, error: `The code has expired. We have sent you a new code to ${user.email}`},
           {status: 400},
         )
-      } else if (err instanceof InvalidEmailVerificationCodeError) {
-        return ctx.render({email: user.email, error: 'The code you have entered is incorrect.'}, {status: 400})
       } else {
         throw err
       }
@@ -114,9 +113,11 @@ export default function Verify(props: PageProps<VerifyEmailState>) {
         <button type="submit">Verify</button>
         {rateLimitError && <p>{rateLimitError}</p>}
       </form>
-      <a class="mt-4 block" href="/auth/resend">
-        Resend code
-      </a>
+      <div>
+        <a class="mt-4" href="/verify-resend">
+          Resend code
+        </a>
+      </div>
     </Container>
   )
 }

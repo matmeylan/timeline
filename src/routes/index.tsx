@@ -1,5 +1,6 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
 import {Container} from '../components/Container.tsx'
+import {UserService} from '../core/domain/user.ts'
 import {User} from '../core/domain/user.types.ts'
 import {RouteState} from '../core/route/state.ts'
 
@@ -37,8 +38,34 @@ export default function Home(props: PageProps<HomeState>) {
           <a href="/journals">See your journals</a>
         </li>
       </menu>
-      <pre> {JSON.stringify(user, null, 2)} </pre>
+      {user ? <UserNav user={user} /> : <AnonymousNav />}
     </Container>
+  )
+}
+
+function UserNav(props: {user: User}) {
+  return (
+    <>
+      <pre>{JSON.stringify(props, null, 2)}</pre>
+      <div class="mt-4 flex flex-row gap-2">
+        <a href="/signout" class="underline">
+          Sign out
+        </a>
+      </div>
+    </>
+  )
+}
+
+function AnonymousNav() {
+  return (
+    <div class="flex flex-row gap-2">
+      <a href="/login" class="underline">
+        Login
+      </a>
+      <a href="/signup" class="underline">
+        Register
+      </a>
+    </div>
   )
 }
 

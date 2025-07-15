@@ -1,5 +1,5 @@
 import {ZodError} from '@zod/zod'
 
-export interface Zodable {
-  toZod(): ZodError
+export interface Zodable<T> {
+  toZod(): ZodError<T>
 }

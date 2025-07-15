@@ -2,6 +2,10 @@
 // This file SHOULD be checked into source version control.
 // This file is automatically updated during development when running `dev.ts`.
 
+import * as $_auth_login from "./routes/(auth)/login.tsx";
+import * as $_auth_signout from "./routes/(auth)/signout.tsx";
+import * as $_auth_signup from "./routes/(auth)/signup.tsx";
+import * as $_auth_verify from "./routes/(auth)/verify.tsx";
 import * as $_slug_ from "./routes/[slug].tsx";
 import * as $_slug_edit_entryId_ from "./routes/[slug]/edit/[entryId].tsx";
 import * as $_slug_write from "./routes/[slug]/write.tsx";
@@ -12,8 +16,6 @@ import * as $_middleware from "./routes/_middleware.ts";
 import * as $api_files_download_index from "./routes/api/files/download/index.ts";
 import * as $api_files_upload_index from "./routes/api/files/upload/index.ts";
 import * as $api_files_upload_local from "./routes/api/files/upload/local.ts";
-import * as $auth_signup from "./routes/auth/signup.tsx";
-import * as $auth_verify from "./routes/auth/verify.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $journals from "./routes/journals.tsx";
 import * as $start from "./routes/start.tsx";
@@ -22,6 +24,10 @@ import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
+    "./routes/(auth)/login.tsx": $_auth_login,
+    "./routes/(auth)/signout.tsx": $_auth_signout,
+    "./routes/(auth)/signup.tsx": $_auth_signup,
+    "./routes/(auth)/verify.tsx": $_auth_verify,
     "./routes/[slug].tsx": $_slug_,
     "./routes/[slug]/edit/[entryId].tsx": $_slug_edit_entryId_,
     "./routes/[slug]/write.tsx": $_slug_write,
@@ -32,8 +38,6 @@ const manifest = {
     "./routes/api/files/download/index.ts": $api_files_download_index,
     "./routes/api/files/upload/index.ts": $api_files_upload_index,
     "./routes/api/files/upload/local.ts": $api_files_upload_local,
-    "./routes/auth/signup.tsx": $auth_signup,
-    "./routes/auth/verify.tsx": $auth_verify,
     "./routes/index.tsx": $index,
     "./routes/journals.tsx": $journals,
     "./routes/start.tsx": $start,

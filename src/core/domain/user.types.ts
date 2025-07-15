@@ -1,5 +1,7 @@
 import {ZodError} from '@zod/zod'
 import {Zodable} from '../serde/zod.ts'
+import {LoginSchemaInput} from '../../routes/(auth)/login.tsx'
+import {SignupSchemaInput} from '../../routes/(auth)/signup.tsx'
 
 export interface User {
   id: string
@@ -14,28 +16,6 @@ export interface User {
 export interface InternalUser extends User {
   passwordHash: string
   recoveryCode: Uint8Array
-}
-
-export class WeakPasswordError extends Error implements Zodable {
-  constructor() {
-    super(
-      `Password is too weak and seems to appear in online databases - Please use another password and change in accounts where you are using it.`,
-    )
-  }
-
-  toZod() {
-    return new ZodError([{input: '****', code: 'custom', path: ['password'], message: this.message}])
-  }
-}
-
-export class EmailAlreadyUsedError extends Error implements Zodable {
-  constructor(private readonly email: string) {
-    super(`Email ${email} already exists.`)
-  }
-
-  toZod() {
-    return new ZodError([{input: this.email, code: 'custom', path: ['email'], message: this.message}])
-  }
 }
 
 export interface EmailVerificationRequest {
@@ -57,6 +37,56 @@ export interface Session extends SessionFlags {
 }
 
 export type SessionValidationResult = {session: Session; user: User} | {session: null; user: null}
+
+export class WeakPasswordError extends Error implements Zodable<{password: string}> {
+  constructor() {
+    super(
+      `Password is too weak and seems to appear in online databases - Please use another password and change in accounts where you are using it.`,
+    )
+  }
+
+  toZod() {
+    return new ZodError([{input: '****', code: 'custom', path: ['password'], message: this.message}]) as ZodError<{
+      password: string
+    }>
+  }
+}
+
+export class EmailAlreadyUsedError extends Error implements Zodable<SignupSchemaInput> {
+  constructor(private readonly email: string) {
+    super(`Email ${email} already exists.`)
+  }
+
+  toZod() {
+    return new ZodError([
+      {input: this.email, code: 'custom', path: ['email'], message: this.message},
+    ]) as ZodError<SignupSchemaInput>
+  }
+}
+
+export class UserDoesNotExistError extends Error implements Zodable<LoginSchemaInput> {
+  constructor(private readonly email: string) {
+    super(`User with email ${email} does not exist. Did you mean to sign-up ?`)
+  }
+
+  toZod() {
+    return new ZodError([
+      {input: this.email, code: 'custom', path: ['email'], message: this.message},
+    ]) as ZodError<LoginSchemaInput>
+  }
+}
+
+export class InvalidPasswordError extends Error implements Zodable<LoginSchemaInput> {
+  constructor() {
+    super(`Password is not correct.`)
+  }
+
+  toZod() {
+    return new ZodError([
+      {input: '****', code: 'custom', path: ['password'], message: this.message},
+    ]) as ZodError<LoginSchemaInput>
+  }
+}
 
 export class EmailVerificationNotFoundError extends Error {
   constructor(verificationId: string) {

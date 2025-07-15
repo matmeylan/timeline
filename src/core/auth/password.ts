@@ -1,4 +1,4 @@
-import {hash} from '@node-rs/argon2'
+import {hash, verify} from '@node-rs/argon2'
 import {encodeBase32UpperCaseNoPadding, encodeHexLowerCase} from '@oslojs/encoding'
 import {sha1} from '@oslojs/crypto/sha1'
 
@@ -41,4 +41,8 @@ export function generateRandomOTP(): string {
   crypto.getRandomValues(bytes)
   const code = encodeBase32UpperCaseNoPadding(bytes)
   return code
+}
+
+export async function verifyPasswordHash(hash: string, password: string): Promise<boolean> {
+  return await verify(hash, password)
 }

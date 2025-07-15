@@ -11,8 +11,16 @@ import {
   EmailVerificationNotFoundError,
   EmailVerificationCodeExpiredError,
   InvalidEmailVerificationCodeError,
+  UserDoesNotExistError,
+  InvalidPasswordError,
 } from './user.types.ts'
-import {hashPassword, generateRandomRecoveryCode, verifyPasswordStrength, generateRandomOTP} from '../auth/password.ts'
+import {
+  hashPassword,
+  generateRandomRecoveryCode,
+  verifyPasswordStrength,
+  generateRandomOTP,
+  verifyPasswordHash,
+} from '../auth/password.ts'
 import {encryptString} from '../auth/encryption.ts'
 import {normalizeEmail} from '../serde/email.ts'
 import {generateSessionToken} from '../auth/session.ts'
@@ -250,6 +258,64 @@ export class UserService {
       })
     }
     return {session, user}
+  }
+
+  invalidateSession(sessionId: string) {
+    this.client.db.sql`DELETE FROM session WHERE id = ${sessionId}`
+  }
+
+  getUserByEmail(email: string): User {
+    using stmt = this.client.db.prepare(
+      `SELECT user.id, user.email, user.email_verified, IIF(totp_credential.id IS NOT NULL, 1, 0), IIF(passkey_credential.id IS NOT NULL, 1, 0), IIF(security_key_credential.id IS NOT NULL, 1, 0) FROM user
+        LEFT JOIN totp_credential ON user.id = totp_credential.user_id
+        LEFT JOIN passkey_credential ON user.id = passkey_credential.user_id
+        LEFT JOIN security_key_credential ON user.id = security_key_credential.user_id
+        WHERE user.email = :email`,
+    )
+
+    const res = stmt.get<{
+      id: string
+      email: string
+      email_verified: number
+      registered_otp: boolean
+      registered_passkey: boolean
+      registered_seckey: boolean
+    }>({email})
+
+    if (!res) {
+      throw new UserDoesNotExistError(email)
+    }
+
+    const user: User = {
+      id: res.id,
+      email: res.email,
+      emailVerified: Boolean(res.email_verified),
+      registeredTOTP: Boolean(res.registered_otp),
+      registeredPasskey: Boolean(res.registered_passkey),
+      registeredSecurityKey: Boolean(res.registered_seckey),
+      registered2FA: false,
+    }
+    if (user.registeredPasskey || user.registeredSecurityKey || user.registeredTOTP) {
+      user.registered2FA = true
+    }
+    return user
+  }
+
+  async validateUserPassword(user: User, password: string) {
+    using getPasswordStmt = this.client.db.prepare('SELECT password_hash FROM user WHERE id = :userId')
+    const res = getPasswordStmt.get<{password_hash: string}>({userId: user.id})
+    if (!res) {
+      throw new UserDoesNotExistError(user.email)
+    }
+    const isValid = await verifyPasswordHash(res.password_hash, password)
+    if (!isValid) {
+      throw new InvalidPasswordError()
+    }
+
+    const {session, sessionToken, stmt, stmtValue} = this.createSession(user.id, {twoFactorVerified: false})
+    stmt.run(stmtValue)
+
+    return {session, sessionToken}
   }
 
   private toExternalUser(internal: InternalUser): User {
