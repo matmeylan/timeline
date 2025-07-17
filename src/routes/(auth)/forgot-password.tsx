@@ -1,17 +1,17 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
+import z, {ZodError} from '@zod/zod'
 import {Container} from '../../components/Container.tsx'
-import {RefillingTokenBucket, Throttler} from '../../core/auth/rate-limit.ts'
 import {RouteState} from '../../core/route/state.ts'
-import {z, ZodError} from '@zod/zod'
+import {RefillingTokenBucket} from '../../core/auth/rate-limit.ts'
 import {EMAIL_VALIDATION_PATTERN} from '../../core/serde/email.ts'
+import {UserDoesNotExistError} from '../../core/domain/user.types.ts'
 import {UserService} from '../../core/domain/user.ts'
-import {InvalidPasswordError, UserDoesNotExistError} from '../../core/domain/user.types.ts'
-import {setSessionTokenCookie} from '../../core/auth/session.ts'
+import {setPasswordResetSessionTokenCookie} from '../../core/auth/password.ts'
 
-const throttler = new Throttler<string>([0, 1, 2, 4, 8, 16, 30, 60, 180, 300])
-const ipBucket = new RefillingTokenBucket<string>(20, 1)
+const ipBucket = new RefillingTokenBucket<string>(3, 60)
+const userBucket = new RefillingTokenBucket<string>(3, 60)
 
-export const handler: Handlers<LoginState, RouteState> = {
+export const handler: Handlers<ForgotPasswordState, RouteState> = {
   GET(req, ctx) {
     const {user} = ctx.state
     if (user) {
@@ -37,12 +37,9 @@ export const handler: Handlers<LoginState, RouteState> = {
 
     const formData = await req.formData()
     const email = formData.get('email')?.toString()
-    const password = formData.get('password')?.toString()
-    const form = {
-      email,
-      password,
-    }
-    const result = LoginSchema.safeParse(form)
+    const form = {email}
+
+    const result = ForgotPasswordSchema.safeParse(form)
     if (!result.success) {
       return ctx.render({error: result.error, form}, {status: 400})
     }
@@ -50,34 +47,21 @@ export const handler: Handlers<LoginState, RouteState> = {
     try {
       const userService = new UserService()
       const user = userService.getUserByEmail(result.data.email)
+
       if (clientIP !== null && !ipBucket.consume(clientIP, 1)) {
         return ctx.render({rateLimitError: 'Too many requests'}, {status: 429})
       }
-      if (!throttler.consume(user.id)) {
+      if (!userBucket.consume(user.id, 1)) {
         return ctx.render({rateLimitError: 'Too many requests'}, {status: 429})
       }
+      const {session, sessionToken} = userService.forgotPassword(user)
 
-      const {session, sessionToken} = await userService.validateUserPassword(user, result.data.password)
-      throttler.reset(user.id)
       const headers = new Headers()
-      setSessionTokenCookie(headers, sessionToken, session.expiresAt)
-
-      if (!user.emailVerified) {
-        headers.set('location', `/verify`)
-        return new Response(null, {status: 303, headers})
-      }
-      // TODO
-      // if (!user.registered2FA) {
-      //   return redirect(302, '/2fa/setup')
-      // }
-      // return redirect(302, get2FARedirect(user))
-
-      headers.set('location', `/`)
+      setPasswordResetSessionTokenCookie(headers, sessionToken, session.expiresAt)
+      headers.set('location', '/reset-password/verify-email')
       return new Response(null, {status: 303, headers})
     } catch (err) {
       if (err instanceof UserDoesNotExistError) {
-        return ctx.render({error: err.toZod(), form}, {status: 400})
-      } else if (err instanceof InvalidPasswordError) {
         return ctx.render({error: err.toZod(), form}, {status: 400})
       }
       throw err
@@ -85,15 +69,15 @@ export const handler: Handlers<LoginState, RouteState> = {
   },
 }
 
-export default function LoginPage(props: PageProps<LoginState>) {
+export default function ForgotPasswordPage(props: PageProps<ForgotPasswordState>) {
   const {error, form, rateLimitError} = props.data || {}
   const errors = error ? z.flattenError(error) : undefined
 
   return (
     <Container class="mt-16 lg:mt-32">
-      <h1 class="text-4xl font-bold">Login</h1>
+      <h1 class="text-4xl font-bold">Forgot your password ?</h1>
       <form method="post" class="mt-4 inline-flex flex-col gap-1">
-        <label for="form-signup.email">Email</label>
+        <label for="email">Email</label>
         <input
           type="email"
           id="email"
@@ -104,22 +88,11 @@ export default function LoginPage(props: PageProps<LoginState>) {
           class="border border-teal-500"
         />
         <div>{errors?.fieldErrors.email}</div>
-        <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          autocomplete="current-password"
-          required
-          value={form?.password ?? ''}
-          class="border border-teal-500"
-        />
-        <div>{errors?.fieldErrors.password}</div>
-        <button type="submit">Login</button>
+        <button type="submit">Send reset link</button>
         {rateLimitError && <p>{rateLimitError}</p>}
       </form>
       <div>
-        <a href={'/forgot-password?email=' + encodeURIComponent(form?.email || '')}>Forgot password</a>
+        <a href={'/login?email=' + encodeURIComponent(form?.email || '')}>Login</a>
       </div>
       <div>
         <a href={'/signup?email=' + encodeURIComponent(form?.email || '')}>Sign up</a>
@@ -128,20 +101,16 @@ export default function LoginPage(props: PageProps<LoginState>) {
   )
 }
 
-interface LoginState {
-  form?: Form
-  error?: LoginSchemaError
+export interface ForgotPasswordState {
+  form?: {
+    email?: string
+  }
+  error?: ForgotPasswordSchemaError
   rateLimitError?: string
 }
 
-interface Form {
-  email?: string
-  password?: string
-}
-
-const LoginSchema = z.object({
+const ForgotPasswordSchema = z.object({
   email: z.email({pattern: EMAIL_VALIDATION_PATTERN}).min(1),
-  password: z.string().min(1),
 })
-export type LoginSchemaInput = z.infer<typeof LoginSchema>
-type LoginSchemaError = ZodError<LoginSchemaInput>
+export type ForgotPasswordSchemaInput = z.infer<typeof ForgotPasswordSchema>
+type ForgotPasswordSchemaError = ZodError<ForgotPasswordSchemaInput>

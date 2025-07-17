@@ -6,7 +6,7 @@ import {UserService} from '../../core/domain/user.ts'
 import {setEmailVerificationRequestCookie} from '../../core/auth/email-verification.ts'
 import {setSessionTokenCookie} from '../../core/auth/session.ts'
 import {EMAIL_VALIDATION_PATTERN} from '../../core/serde/email.ts'
-import {EmailAlreadyUsedError} from '../../core/domain/user.types.ts'
+import {EmailAlreadyUsedError, WeakPasswordError} from '../../core/domain/user.types.ts'
 import {RouteState} from '../../core/route/state.ts'
 
 const ipBucket = new RefillingTokenBucket<string>(3, 10)
@@ -65,6 +65,8 @@ export const handler: Handlers<SignupState, RouteState> = {
       return new Response(null, {status: 302, headers})
     } catch (err) {
       if (err instanceof EmailAlreadyUsedError) {
+        return ctx.render({error: err.toZod(), form}, {status: 400})
+      } else if (err instanceof WeakPasswordError) {
         return ctx.render({error: err.toZod(), form}, {status: 400})
       }
       throw err

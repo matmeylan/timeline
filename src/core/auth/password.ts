@@ -1,6 +1,7 @@
 import {hash, verify} from '@node-rs/argon2'
 import {encodeBase32UpperCaseNoPadding, encodeHexLowerCase} from '@oslojs/encoding'
 import {sha1} from '@oslojs/crypto/sha1'
+import {deleteCookie, getCookies, setCookie} from '@std/http/cookie'
 
 export async function hashPassword(password: string): Promise<string> {
   return await hash(password, {
@@ -45,4 +46,26 @@ export function generateRandomOTP(): string {
 
 export async function verifyPasswordHash(hash: string, password: string): Promise<boolean> {
   return await verify(hash, password)
+}
+
+const PASSWORD_RESET_SESSION_COOKIE_NAME = 'password_reset_session'
+
+export function setPasswordResetSessionTokenCookie(headers: Headers, token: string, expiresAt: Date): void {
+  setCookie(headers, {
+    name: PASSWORD_RESET_SESSION_COOKIE_NAME,
+    value: token,
+    httpOnly: true,
+    path: '/',
+    sameSite: 'Lax',
+    expires: new Date(expiresAt),
+    secure: (Deno.env.get('PROD') ?? false) == 'true',
+  })
+}
+
+export function getPasswordResetSessionTokenCookie(headers: Headers): string | null {
+  return getCookies(headers)[PASSWORD_RESET_SESSION_COOKIE_NAME] ?? null
+}
+
+export function deletePasswordResetSessionTokenCookie(headers: Headers) {
+  return deleteCookie(headers, PASSWORD_RESET_SESSION_COOKIE_NAME)
 }

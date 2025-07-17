@@ -2,7 +2,10 @@
 // This file SHOULD be checked into source version control.
 // This file is automatically updated during development when running `dev.ts`.
 
+import * as $_auth_forgot_password from "./routes/(auth)/forgot-password.tsx";
 import * as $_auth_login from "./routes/(auth)/login.tsx";
+import * as $_auth_reset_password_index from "./routes/(auth)/reset-password/index.tsx";
+import * as $_auth_reset_password_verify_email from "./routes/(auth)/reset-password/verify-email.tsx";
 import * as $_auth_signout from "./routes/(auth)/signout.tsx";
 import * as $_auth_signup from "./routes/(auth)/signup.tsx";
 import * as $_auth_verify from "./routes/(auth)/verify.tsx";
@@ -24,7 +27,11 @@ import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
+    "./routes/(auth)/forgot-password.tsx": $_auth_forgot_password,
     "./routes/(auth)/login.tsx": $_auth_login,
+    "./routes/(auth)/reset-password/index.tsx": $_auth_reset_password_index,
+    "./routes/(auth)/reset-password/verify-email.tsx":
+      $_auth_reset_password_verify_email,
     "./routes/(auth)/signout.tsx": $_auth_signout,
     "./routes/(auth)/signup.tsx": $_auth_signup,
     "./routes/(auth)/verify.tsx": $_auth_verify,

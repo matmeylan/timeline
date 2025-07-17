@@ -38,7 +38,16 @@ export interface Session extends SessionFlags {
 
 export type SessionValidationResult = {session: Session; user: User} | {session: null; user: null}
 
-export class WeakPasswordError extends Error implements Zodable<{password: string}> {
+export interface PasswordResetSession {
+  id: string
+  userId: string
+  email: string
+  expiresAt: Date
+  code: string
+  emailVerified: boolean
+}
+
+export class WeakPasswordError extends Error implements Zodable<SignupSchemaInput> {
   constructor() {
     super(
       `Password is too weak and seems to appear in online databases - Please use another password and change in accounts where you are using it.`,
@@ -46,9 +55,9 @@ export class WeakPasswordError extends Error implements Zodable<{password: strin
   }
 
   toZod() {
-    return new ZodError([{input: '****', code: 'custom', path: ['password'], message: this.message}]) as ZodError<{
-      password: string
-    }>
+    return new ZodError([
+      {input: '****', code: 'custom', path: ['password'], message: this.message},
+    ]) as ZodError<SignupSchemaInput>
   }
 }
 

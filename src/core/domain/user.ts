@@ -13,6 +13,7 @@ import {
   InvalidEmailVerificationCodeError,
   UserDoesNotExistError,
   InvalidPasswordError,
+  PasswordResetSession,
 } from './user.types.ts'
 import {
   hashPassword,
@@ -155,7 +156,7 @@ export class UserService {
     }
 
     this.deleteUserEmailVerificationRequest(user.id)
-    // invalidateUserPasswordResetSessions(event.locals.user.id)
+    this.invalidateUserPasswordResetSessions(user.id)
     this.updateUserEmailAndSetEmailAsVerified(user.id, request.email)
   }
 
@@ -264,6 +265,10 @@ export class UserService {
     this.client.db.sql`DELETE FROM session WHERE id = ${sessionId}`
   }
 
+  private invalidateUserSessions(userId: string): void {
+    this.client.db.sql`DELETE FROM session WHERE user_id = ${userId}`
+  }
+
   getUserByEmail(email: string): User {
     const stmt = this.client.db.prepare(
       `SELECT user.id, user.email, user.email_verified, IIF(totp_credential.id IS NOT NULL, 1, 0), IIF(passkey_credential.id IS NOT NULL, 1, 0), IIF(security_key_credential.id IS NOT NULL, 1, 0) FROM user
@@ -315,6 +320,132 @@ export class UserService {
     const {session, sessionToken, stmt, stmtValue} = this.createSession(user.id, {twoFactorVerified: false})
     stmt.run(stmtValue)
 
+    return {session, sessionToken}
+  }
+
+  forgotPassword(user: User) {
+    this.client.db.sql`DELETE FROM password_reset_session WHERE user_id = ${user.id}`
+
+    const sessionToken = generateSessionToken()
+    const session = this.createPasswordResetSession(sessionToken, user.id, user.email)
+    this.sendPasswordResetEmail(session.email, session.code)
+
+    return {session, sessionToken}
+  }
+
+  private createPasswordResetSession(token: string, userId: string, email: string) {
+    const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
+    const session: PasswordResetSession = {
+      id: sessionId,
+      userId,
+      email,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 10),
+      code: generateRandomOTP(),
+      emailVerified: false,
+    }
+    using stmt = this.client.db.prepare(
+      'INSERT INTO password_reset_session (id, user_id, email, code, expires_at) VALUES (:id, :userId, :email, :code, :expiresAt)',
+    )
+    stmt.run({
+      id: session.id,
+      userId: session.userId,
+      email: session.email,
+      code: session.code,
+      expiresAt: session.expiresAt,
+    })
+    return session
+  }
+
+  private sendPasswordResetEmail(email: string, code: string): void {
+    console.log(`To ${email}: Your reset code is ${code}`)
+  }
+
+  validatePasswordResetSessionRequest(token: string) {
+    const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
+    using stmt = this.client.db.prepare(
+      `
+      SELECT 
+        password_reset_session.id, password_reset_session.user_id, password_reset_session.email, password_reset_session.code, password_reset_session.expires_at, password_reset_session.email_verified,
+        user.email_verified as user_email_verified, 
+        IIF(totp_credential.id IS NOT NULL, 1, 0) as registered_otp, 
+        IIF(passkey_credential.id IS NOT NULL, 1, 0) as registered_passkey,  
+        IIF(security_key_credential.id IS NOT NULL, 1, 0) as registered_seckey 
+      FROM password_reset_session
+      INNER JOIN user ON password_reset_session.user_id = user.id
+      LEFT JOIN totp_credential ON user.id = totp_credential.user_id
+      LEFT JOIN passkey_credential ON user.id = passkey_credential.user_id
+      LEFT JOIN security_key_credential ON user.id = security_key_credential.user_id
+      WHERE password_reset_session.id = :sessionId
+      `,
+    )
+    const res = stmt.get<{
+      id: string
+      user_id: string
+      email: string
+      code: string
+      expires_at: string
+      email_verified: number
+      user_email_verified: number
+      registered_otp: boolean
+      registered_passkey: boolean
+      registered_seckey: boolean
+    }>({sessionId})
+    if (!res) {
+      return {session: null, user: null}
+    }
+    const session: PasswordResetSession = {
+      id: res.id,
+      userId: res.user_id,
+      email: res.email,
+      code: res.code,
+      expiresAt: new Date(res.expires_at),
+      emailVerified: Boolean(res.email_verified),
+    }
+    const user: User = {
+      id: res.user_id,
+      email: res.email,
+      emailVerified: Boolean(res.user_email_verified),
+      registeredTOTP: Boolean(res.registered_otp),
+      registeredPasskey: Boolean(res.registered_passkey),
+      registeredSecurityKey: Boolean(res.registered_seckey),
+      registered2FA: false,
+    }
+    if (user.registeredPasskey || user.registeredSecurityKey || user.registeredTOTP) {
+      user.registered2FA = true
+    }
+    if (new Date() >= new Date(session.expiresAt)) {
+      this.client.db.sql`DELETE FROM password_reset_session WHERE id = ${session.id}`
+      return {session: null, user: null}
+    }
+    return {session, user}
+  }
+
+  private invalidateUserPasswordResetSessions(userId: string): void {
+    this.client.db.sql`DELETE FROM password_reset_session WHERE user_id = ${userId}`
+  }
+
+  setPasswordResetSessionAsEmailVerified(sessionId: string): void {
+    this.client.db.sql`UPDATE password_reset_session SET email_verified = 1 WHERE id = ${sessionId}`
+  }
+
+  setUserAsEmailVerifiedIfEmailMatches(userId: string, email: string): boolean {
+    using stmt = this.client.db.prepare('UPDATE user SET email_verified = 1 WHERE id = :userId AND email = :email')
+    return stmt.run({userId, email}) > 0
+  }
+
+  async resetPassword(userId: string, newPassword: string) {
+    const strongPassword = verifyPasswordStrength(newPassword)
+    if (!strongPassword) {
+      throw new WeakPasswordError()
+    }
+
+    this.invalidateUserPasswordResetSessions(userId)
+    this.invalidateUserSessions(userId)
+    const passwordHash = await hashPassword(newPassword)
+    this.client.db.sql`UPDATE user SET password_hash = ${passwordHash} WHERE id = ${userId}`
+
+    const {session, sessionToken, stmt, stmtValue} = this.createSession(userId, {twoFactorVerified: false})
+    stmt.run(stmtValue)
     return {session, sessionToken}
   }
 
