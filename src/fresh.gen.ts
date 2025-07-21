@@ -5,7 +5,8 @@
 import * as $_auth_2fa_passkey_index from "./routes/(auth)/2fa/passkey/index.tsx";
 import * as $_auth_2fa_passkey_register from "./routes/(auth)/2fa/passkey/register.tsx";
 import * as $_auth_forgot_password from "./routes/(auth)/forgot-password.tsx";
-import * as $_auth_login from "./routes/(auth)/login.tsx";
+import * as $_auth_login_index from "./routes/(auth)/login/index.tsx";
+import * as $_auth_login_passkey from "./routes/(auth)/login/passkey.ts";
 import * as $_auth_reset_password_index from "./routes/(auth)/reset-password/index.tsx";
 import * as $_auth_reset_password_verify_email from "./routes/(auth)/reset-password/verify-email.tsx";
 import * as $_auth_signout from "./routes/(auth)/signout.tsx";
@@ -25,6 +26,7 @@ import * as $api_webauthn_challenge from "./routes/api/webauthn/challenge.ts";
 import * as $index from "./routes/index.tsx";
 import * as $journals from "./routes/journals.tsx";
 import * as $start from "./routes/start.tsx";
+import * as $auth_login_with_passkey_button from "./islands/auth/login-with-passkey-button.tsx";
 import * as $auth_register_passkey_button from "./islands/auth/register-passkey-button.tsx";
 import * as $content_editor_content_editor from "./islands/content-editor/content-editor.tsx";
 import type { Manifest } from "$fresh/server.ts";
@@ -34,7 +36,8 @@ const manifest = {
     "./routes/(auth)/2fa/passkey/index.tsx": $_auth_2fa_passkey_index,
     "./routes/(auth)/2fa/passkey/register.tsx": $_auth_2fa_passkey_register,
     "./routes/(auth)/forgot-password.tsx": $_auth_forgot_password,
-    "./routes/(auth)/login.tsx": $_auth_login,
+    "./routes/(auth)/login/index.tsx": $_auth_login_index,
+    "./routes/(auth)/login/passkey.ts": $_auth_login_passkey,
     "./routes/(auth)/reset-password/index.tsx": $_auth_reset_password_index,
     "./routes/(auth)/reset-password/verify-email.tsx":
       $_auth_reset_password_verify_email,
@@ -57,6 +60,8 @@ const manifest = {
     "./routes/start.tsx": $start,
   },
   islands: {
+    "./islands/auth/login-with-passkey-button.tsx":
+      $auth_login_with_passkey_button,
     "./islands/auth/register-passkey-button.tsx": $auth_register_passkey_button,
     "./islands/content-editor/content-editor.tsx":
       $content_editor_content_editor,

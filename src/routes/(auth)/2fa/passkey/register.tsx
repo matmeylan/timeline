@@ -38,11 +38,12 @@ export const handler: Handlers<RegisterPasskeyState, RouteState> = {
       headers.set('location', `/verify`)
       return new Response(null, {status: 303, headers})
     }
-    if (user.registered2FA && !session.twoFactorVerified) {
-      const headers = new Headers()
-      headers.set('location', `/2fa/passkey/register`)
-      return new Response(null, {status: 303, headers})
-    }
+    // TODO: other factor
+    // if (user.registered2FA && !session.twoFactorVerified) {
+    //   const headers = new Headers()
+    //   headers.set('location', `/2fa/passkey/register`)
+    //   return new Response(null, {status: 303, headers})
+    // }
 
     const user2FAService = new User2FAService()
     const credentials = user2FAService.getUserPasskeyCredentials(user.id)
@@ -62,10 +63,11 @@ export const handler: Handlers<RegisterPasskeyState, RouteState> = {
       headers.set('location', `/verify`)
       return new Response(null, {status: 303, headers})
     }
-    if (user.registered2FA && !session.twoFactorVerified) {
-      headers.set('location', `/2fa/passkey/register`)
-      return new Response(null, {status: 303, headers})
-    }
+    // TODO: other factor
+    // if (user.registered2FA && !session.twoFactorVerified) {
+    //   headers.set('location', `/2fa/passkey/register`)
+    //   return new Response(null, {status: 303, headers})
+    // }
 
     const formData = await req.formData()
     const encodedAttestationObject = formData.get('attestation_object')
@@ -203,7 +205,6 @@ export const handler: Handlers<RegisterPasskeyState, RouteState> = {
     }
 
     const user2FAService = new User2FAService()
-
     try {
       user2FAService.createPasskeyCredential(credential)
     } catch (e) {

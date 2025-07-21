@@ -11,3 +11,15 @@ export class TooMany2faCredentialsError extends Error {
     super(`Too many credentials, you can have up to ${limit}`)
   }
 }
+
+export class CredentialNotFoundError extends Error {
+  constructor(readonly credentialId: Uint8Array) {
+    super(`Credential not found`)
+  }
+}
+
+export class InvalidCredentialError extends Error {
+  constructor(readonly credentialId: Uint8Array) {
+    super(`Credential signature is not valid`)
+  }
+}

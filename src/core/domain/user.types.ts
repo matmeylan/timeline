@@ -1,6 +1,6 @@
 import {ZodError} from '@zod/zod'
 import {Zodable} from '../serde/zod.ts'
-import {LoginSchemaInput} from '../../routes/(auth)/login.tsx'
+import {LoginSchemaInput} from '../../routes/(auth)/login/index.tsx'
 import {SignupSchemaInput} from '../../routes/(auth)/signup.tsx'
 
 export interface User {
@@ -114,22 +114,3 @@ export class InvalidEmailVerificationCodeError extends Error {
     super(`Email verification code ${code} is invalid`)
   }
 }
-
-/*
-    const session: Session = {
-      id: row.string(0),
-      userId: row.number(1),
-      expiresAt: new Date(row.number(2) * 1000),
-      twoFactorVerified: Boolean(row.number(3)),
-    }
-    const user: User = {
-      id: row.number(4),
-      email: row.string(5),
-      username: row.string(6),
-      emailVerified: Boolean(row.number(7)),
-      registeredTOTP: Boolean(row.number(8)),
-      registeredPasskey: Boolean(row.number(9)),
-      registeredSecurityKey: Boolean(row.number(10)),
-      registered2FA: false,
-    }
-      */
