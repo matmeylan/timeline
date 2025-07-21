@@ -65,7 +65,6 @@ export const handler: Handlers<VerifyEmailState, RouteState> = {
     if (code === '') {
       return ctx.render({email: user.email, error: 'Please enter your code'}, {status: 400})
     }
-
     if (!bucket.consume(user.id, 1)) {
       return ctx.render({email: user.email, rateLimitError: 'Too many requests'}, {status: 429})
     }
@@ -115,7 +114,7 @@ export default function Verify(props: PageProps<VerifyEmailState>) {
       </form>
       <div>
         <a class="mt-4" href="/verify-resend">
-          Resend code
+          Resend code (TODO and rename to verify-email)
         </a>
       </div>
     </Container>

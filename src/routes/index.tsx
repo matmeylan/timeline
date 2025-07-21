@@ -1,6 +1,5 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
 import {Container} from '../components/Container.tsx'
-import {UserService} from '../core/domain/user.ts'
 import {User} from '../core/domain/user.types.ts'
 import {RouteState} from '../core/route/state.ts'
 
@@ -47,7 +46,10 @@ function UserNav(props: {user: User}) {
   return (
     <>
       <pre>{JSON.stringify(props, null, 2)}</pre>
-      <div class="mt-4 flex flex-row gap-2">
+      <div class="mt-4 flex flex-col gap-2">
+        <a href="/2fa/passkey/register" class="underline">
+          Passkeys
+        </a>
         <a href="/signout" class="underline">
           Sign out
         </a>

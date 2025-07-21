@@ -2,6 +2,8 @@
 // This file SHOULD be checked into source version control.
 // This file is automatically updated during development when running `dev.ts`.
 
+import * as $_auth_2fa_passkey_index from "./routes/(auth)/2fa/passkey/index.tsx";
+import * as $_auth_2fa_passkey_register from "./routes/(auth)/2fa/passkey/register.tsx";
 import * as $_auth_forgot_password from "./routes/(auth)/forgot-password.tsx";
 import * as $_auth_login from "./routes/(auth)/login.tsx";
 import * as $_auth_reset_password_index from "./routes/(auth)/reset-password/index.tsx";
@@ -19,14 +21,18 @@ import * as $_middleware from "./routes/_middleware.ts";
 import * as $api_files_download_index from "./routes/api/files/download/index.ts";
 import * as $api_files_upload_index from "./routes/api/files/upload/index.ts";
 import * as $api_files_upload_local from "./routes/api/files/upload/local.ts";
+import * as $api_webauthn_challenge from "./routes/api/webauthn/challenge.ts";
 import * as $index from "./routes/index.tsx";
 import * as $journals from "./routes/journals.tsx";
 import * as $start from "./routes/start.tsx";
+import * as $auth_register_passkey_button from "./islands/auth/register-passkey-button.tsx";
 import * as $content_editor_content_editor from "./islands/content-editor/content-editor.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
+    "./routes/(auth)/2fa/passkey/index.tsx": $_auth_2fa_passkey_index,
+    "./routes/(auth)/2fa/passkey/register.tsx": $_auth_2fa_passkey_register,
     "./routes/(auth)/forgot-password.tsx": $_auth_forgot_password,
     "./routes/(auth)/login.tsx": $_auth_login,
     "./routes/(auth)/reset-password/index.tsx": $_auth_reset_password_index,
@@ -45,11 +51,13 @@ const manifest = {
     "./routes/api/files/download/index.ts": $api_files_download_index,
     "./routes/api/files/upload/index.ts": $api_files_upload_index,
     "./routes/api/files/upload/local.ts": $api_files_upload_local,
+    "./routes/api/webauthn/challenge.ts": $api_webauthn_challenge,
     "./routes/index.tsx": $index,
     "./routes/journals.tsx": $journals,
     "./routes/start.tsx": $start,
   },
   islands: {
+    "./islands/auth/register-passkey-button.tsx": $auth_register_passkey_button,
     "./islands/content-editor/content-editor.tsx":
       $content_editor_content_editor,
   },
