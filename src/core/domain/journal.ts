@@ -11,7 +11,8 @@ import {
 import {isUniqueConstraintError, SqliteClient} from '../database/sqlite.ts'
 
 // reserved slugs at the same URL path level
-const reservedSlugs = ['start', 'journals']
+// TODO: user prefixed journals
+const reservedSlugs = ['start', 'journals', '2fa', 'login', 'reset-password', 'signout', 'signup']
 
 export class JournalService {
   constructor(private readonly client: SqliteClient = new SqliteClient()) {}

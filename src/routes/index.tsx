@@ -47,7 +47,7 @@ function UserNav(props: {user: User}) {
     <>
       <pre>{JSON.stringify(props, null, 2)}</pre>
       <div class="mt-4 flex flex-col gap-2">
-        <a href="/2fa/passkey/register" class="underline">
+        <a href="/2fa/passkey" class="underline">
           Passkeys
         </a>
         <a href="/signout" class="underline">

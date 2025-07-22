@@ -145,4 +145,8 @@ export class User2FAService {
   setSessionAs2FAVerified(sessionId: string): void {
     this.client.db.sql`UPDATE session SET two_factor_verified = 1 WHERE id = ${sessionId}`
   }
+
+  deletePasskeyCredential(userId: string, credentialId: Uint8Array): void {
+    this.client.db.sql`DELETE FROM passkey_credential WHERE id = ${credentialId} AND user_id = ${userId}`
+  }
 }

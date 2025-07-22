@@ -1,22 +1,23 @@
 import {decodeBase64, encodeBase64} from '@oslojs/encoding'
-import {WebAuthnUserCredential} from '../../core/domain/user-2fa.types.ts'
 import z from '@zod/zod'
 
-export default function RegisterPasskeyButton(props: {
-  user: {email: string}
-  credentials: WebAuthnUserCredential[]
-  credentialUserId: Uint8Array
-}) {
+export default function RegisterPasskeyButton() {
   const handleCreatePasskey = () => {
-    generatePasskey(props).then(res => {
-      // use a HTML form to use form submission by the browser, follow redirections, etc...
+    generatePasskey().then(res => {
+      // we use a HTML form to use form submission by the browser, follow redirections, etc...
       const form = document.createElement('form')
       form.method = 'POST'
       form.style.display = 'none'
 
+      const actionInput = document.createElement('input')
+      actionInput.type = 'hidden'
+      actionInput.name = 'action'
+      actionInput.value = 'add'
+      form.appendChild(actionInput)
+
       Object.entries({
-        attestation_object: res.encodedAttestationObject,
-        client_data_json: res.encodedClientDataJSON,
+        attestationObject: res.encodedAttestationObject,
+        clientDataJson: res.encodedClientDataJSON,
       }).forEach(([key, value]) => {
         const input = document.createElement('input')
         input.type = 'hidden'
@@ -40,15 +41,11 @@ export default function RegisterPasskeyButton(props: {
   )
 }
 
-async function generatePasskey(props: {
-  user: {email: string}
-  credentials: WebAuthnUserCredential[]
-  credentialUserId: Uint8Array
-}) {
-  const {user, credentials, credentialUserId} = props
-  const challenge = await createChallenge()
+async function generatePasskey() {
+  const {challenge, credentialIds, credentialUserId, user} = await createChallenge()
   const credential = await navigator.credentials.create({
     publicKey: {
+      attestation: 'none',
       challenge,
       user: {
         displayName: user.email,
@@ -56,27 +53,26 @@ async function generatePasskey(props: {
         name: user.email,
       },
       rp: {
-        name: 'SvelteKit WebAuthn example',
+        name: 'Journal application',
       },
       pubKeyCredParams: [
         {
-          alg: -7,
+          alg: -7, // ES256
           type: 'public-key',
         },
         {
-          alg: -257,
+          alg: -257, // RS256
           type: 'public-key',
         },
       ],
-      attestation: 'none',
       authenticatorSelection: {
         userVerification: 'required',
         residentKey: 'required',
         requireResidentKey: true,
       },
-      excludeCredentials: credentials.map(credential => {
+      excludeCredentials: credentialIds.map(id => {
         return {
-          id: credential.id,
+          id: id,
           type: 'public-key',
         }
       }),
@@ -95,8 +91,8 @@ async function generatePasskey(props: {
   return {encodedAttestationObject, encodedClientDataJSON}
 }
 
-async function createChallenge(): Promise<Uint8Array> {
-  const response = await fetch('/api/webauthn/challenge', {
+async function createChallenge() {
+  const response = await fetch('/api/webauthn/challenge/register', {
     method: 'POST',
   })
   if (!response.ok) {
@@ -104,9 +100,17 @@ async function createChallenge(): Promise<Uint8Array> {
   }
   const result = await response.json()
   const data = WebAuthnChallengeResponseSchema.parse(result)
-  return decodeBase64(data.challenge)
+  return {
+    challenge: decodeBase64(data.challenge),
+    user: data.user,
+    credentialUserId: decodeBase64(data.credentialUserId),
+    credentialIds: data.credentialIds.map(c => decodeBase64(c)),
+  }
 }
 
 const WebAuthnChallengeResponseSchema = z.object({
-  challenge: z.string(),
+  challenge: z.base64(),
+  user: z.object({email: z.string()}),
+  credentialUserId: z.base64(),
+  credentialIds: z.array(z.base64()),
 })

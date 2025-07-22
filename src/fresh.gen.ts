@@ -2,8 +2,7 @@
 // This file SHOULD be checked into source version control.
 // This file is automatically updated during development when running `dev.ts`.
 
-import * as $_auth_2fa_passkey_index from "./routes/(auth)/2fa/passkey/index.tsx";
-import * as $_auth_2fa_passkey_register from "./routes/(auth)/2fa/passkey/register.tsx";
+import * as $_auth_2fa_passkey from "./routes/(auth)/2fa/passkey.tsx";
 import * as $_auth_forgot_password from "./routes/(auth)/forgot-password.tsx";
 import * as $_auth_login_index from "./routes/(auth)/login/index.tsx";
 import * as $_auth_login_passkey from "./routes/(auth)/login/passkey.ts";
@@ -22,7 +21,8 @@ import * as $_middleware from "./routes/_middleware.ts";
 import * as $api_files_download_index from "./routes/api/files/download/index.ts";
 import * as $api_files_upload_index from "./routes/api/files/upload/index.ts";
 import * as $api_files_upload_local from "./routes/api/files/upload/local.ts";
-import * as $api_webauthn_challenge from "./routes/api/webauthn/challenge.ts";
+import * as $api_webauthn_challenge_login from "./routes/api/webauthn/challenge/login.ts";
+import * as $api_webauthn_challenge_register from "./routes/api/webauthn/challenge/register.ts";
 import * as $index from "./routes/index.tsx";
 import * as $journals from "./routes/journals.tsx";
 import * as $start from "./routes/start.tsx";
@@ -33,8 +33,7 @@ import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
-    "./routes/(auth)/2fa/passkey/index.tsx": $_auth_2fa_passkey_index,
-    "./routes/(auth)/2fa/passkey/register.tsx": $_auth_2fa_passkey_register,
+    "./routes/(auth)/2fa/passkey.tsx": $_auth_2fa_passkey,
     "./routes/(auth)/forgot-password.tsx": $_auth_forgot_password,
     "./routes/(auth)/login/index.tsx": $_auth_login_index,
     "./routes/(auth)/login/passkey.ts": $_auth_login_passkey,
@@ -54,7 +53,9 @@ const manifest = {
     "./routes/api/files/download/index.ts": $api_files_download_index,
     "./routes/api/files/upload/index.ts": $api_files_upload_index,
     "./routes/api/files/upload/local.ts": $api_files_upload_local,
-    "./routes/api/webauthn/challenge.ts": $api_webauthn_challenge,
+    "./routes/api/webauthn/challenge/login.ts": $api_webauthn_challenge_login,
+    "./routes/api/webauthn/challenge/register.ts":
+      $api_webauthn_challenge_register,
     "./routes/index.tsx": $index,
     "./routes/journals.tsx": $journals,
     "./routes/start.tsx": $start,

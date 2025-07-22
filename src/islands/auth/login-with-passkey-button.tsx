@@ -62,7 +62,7 @@ async function loginWithPasskey() {
 }
 
 async function createChallenge(): Promise<Uint8Array> {
-  const response = await fetch('/api/webauthn/challenge', {
+  const response = await fetch('/api/webauthn/challenge/login', {
     method: 'POST',
   })
   if (!response.ok) {
