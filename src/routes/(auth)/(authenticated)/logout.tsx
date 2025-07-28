@@ -1,7 +1,9 @@
 import {Handlers} from '$fresh/server.ts'
-import {UserService} from '../../core/domain/user.ts'
-import {RouteState} from '../../core/route/state.ts'
-import {deleteSessionTokenCookie} from '../../core/auth/session.ts'
+import {UserService} from '../../../core/domain/user.ts'
+import {RouteState} from '../../../core/route/state.ts'
+import {deleteSessionTokenCookie} from '../../../core/auth/session.ts'
+import {redirect} from '../../../core/http/redirect.ts'
+
 export const handler: Handlers<void, RouteState> = {
   GET(req, ctx) {
     const headers = new Headers()
@@ -10,7 +12,6 @@ export const handler: Handlers<void, RouteState> = {
       userService.invalidateSession(ctx.state.session.id)
       deleteSessionTokenCookie(headers)
     }
-    headers.set('location', `/login`)
-    return new Response(null, {status: 303, headers})
+    return redirect('/login', 303, headers)
   },
 }

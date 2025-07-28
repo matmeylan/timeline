@@ -6,6 +6,7 @@ import ContentEditor from '../../islands/content-editor/content-editor.tsx'
 import {Container} from '../../components/Container.tsx'
 import {ArrowLeftIcon} from '../../components/icons.tsx'
 import {Button} from '../../components/Button.tsx'
+import {redirect} from '../../core/http/redirect.ts'
 
 export const handler: Handlers = {
   GET(_req, ctx) {
@@ -38,9 +39,7 @@ export const handler: Handlers = {
     const journal = service.getJournalBySlug(slug)
     service.writeEntry(journal.id, result.data)
 
-    const headers = new Headers()
-    headers.set('location', `/${journal.slug}`)
-    return new Response(null, {status: 303, headers})
+    return redirect(`/${journal.slug}`, 303)
   },
 }
 

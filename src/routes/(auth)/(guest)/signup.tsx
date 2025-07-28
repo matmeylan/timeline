@@ -1,29 +1,19 @@
 import {PageProps, Handlers} from '$fresh/server.ts'
-import {Container} from '../../components/Container.tsx'
+import {Container} from '../../../components/Container.tsx'
 import {z, ZodError} from '@zod/zod'
-import {RefillingTokenBucket} from '../../core/auth/rate-limit.ts'
-import {UserService} from '../../core/domain/user.ts'
-import {setEmailVerificationRequestCookie} from '../../core/auth/email-verification.ts'
-import {setSessionTokenCookie} from '../../core/auth/session.ts'
-import {EMAIL_VALIDATION_PATTERN} from '../../core/serde/email.ts'
-import {EmailAlreadyUsedError, UsernameAlreadyUsedError, WeakPasswordError} from '../../core/domain/user.types.ts'
-import {RouteState} from '../../core/route/state.ts'
+import {RefillingTokenBucket} from '../../../core/auth/rate-limit.ts'
+import {UserService} from '../../../core/domain/user.ts'
+import {setEmailVerificationRequestCookie} from '../../../core/auth/email-verification.ts'
+import {setSessionTokenCookie} from '../../../core/auth/session.ts'
+import {EMAIL_VALIDATION_PATTERN} from '../../../core/serde/email.ts'
+import {EmailAlreadyUsedError, UsernameAlreadyUsedError, WeakPasswordError} from '../../../core/domain/user.types.ts'
+import {RouteState} from '../../../core/route/state.ts'
+import {redirect} from '../../../core/http/redirect.ts'
 
 const ipBucket = new RefillingTokenBucket<string>(3, 10)
 
 export const handler: Handlers<SignupState, RouteState> = {
   GET(req, ctx) {
-    const {user} = ctx.state
-    if (user) {
-      const headers = new Headers()
-      if (user.emailVerified) {
-        headers.set('location', `/`)
-      } else {
-        headers.set('location', `/verify-email`)
-      }
-      return new Response(null, {status: 303, headers})
-    }
-
     const url = new URL(req.url)
     const email = decodeURIComponent(url.searchParams.get('email') || '')
     return ctx.render({form: {email}})
@@ -61,9 +51,7 @@ export const handler: Handlers<SignupState, RouteState> = {
       const headers = new Headers()
       setEmailVerificationRequestCookie(headers, emailVerificationRequest)
       setSessionTokenCookie(headers, sessionToken, session.expiresAt)
-
-      headers.set('location', `/verify-email`)
-      return new Response(null, {status: 302, headers})
+      return redirect('/verify-email', 302, headers)
     } catch (err) {
       if (
         err instanceof EmailAlreadyUsedError ||

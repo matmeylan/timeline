@@ -1,9 +1,13 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
-import {Container} from '../../../components/Container.tsx'
-import {ExpiringTokenBucket} from '../../../core/auth/rate-limit.ts'
-import {RouteState} from '../../../core/route/state.ts'
-import {deletePasswordResetSessionTokenCookie, getPasswordResetSessionTokenCookie} from '../../../core/auth/password.ts'
-import {UserService} from '../../../core/domain/user.ts'
+import {Container} from '../../../../components/Container.tsx'
+import {ExpiringTokenBucket} from '../../../../core/auth/rate-limit.ts'
+import {RouteState} from '../../../../core/route/state.ts'
+import {
+  deletePasswordResetSessionTokenCookie,
+  getPasswordResetSessionTokenCookie,
+} from '../../../../core/auth/password.ts'
+import {UserService} from '../../../../core/domain/user.ts'
+import {redirect} from '../../../../core/http/redirect.ts'
 
 const bucket = new ExpiringTokenBucket<string>(5, 60 * 30)
 
@@ -11,37 +15,31 @@ export const handler: Handlers<VerifyEmailForPasswordResetState, RouteState> = {
   GET(req, ctx) {
     const resetToken = getPasswordResetSessionTokenCookie(req.headers)
     if (!resetToken) {
-      const headers = new Headers()
-      headers.set('location', `/forgot-password`)
-      return new Response(null, {status: 303, headers})
+      return redirect('/forgot-password', 303)
     }
     const headers = new Headers()
     const userService = new UserService()
     const {session} = userService.validatePasswordResetSessionRequest(resetToken)
     if (!session) {
       deletePasswordResetSessionTokenCookie(headers)
-      headers.set('location', `/forgot-password`)
-      return new Response(null, {status: 303, headers})
+      return redirect('/forgot-password', 303, headers)
     }
     if (session.emailVerified) {
-      headers.set('location', `/reset-password`)
-      return new Response(null, {status: 303, headers})
+      return redirect('/reset-password', 303, headers)
     }
     return ctx.render({email: session.email})
   },
   async POST(req, ctx) {
     const resetToken = getPasswordResetSessionTokenCookie(req.headers)
     if (!resetToken) {
-      const headers = new Headers()
-      headers.set('location', `/forgot-password`)
-      return new Response(null, {status: 303, headers})
+      return redirect('/forgot-password', 303)
     }
     const userService = new UserService()
     const {session} = userService.validatePasswordResetSessionRequest(resetToken)
     if (!session) {
       return ctx.render({error: 'Invalid or missing code'}, {status: 401})
     }
-    // TODO figure this out ?=
+    // TODO figure this out ?
     // if (session.emailVerified) {
     //   return ctx.render({email: session.email, error: 'Forbidden'}, {status: 403})
     // }
@@ -70,9 +68,7 @@ export const handler: Handlers<VerifyEmailForPasswordResetState, RouteState> = {
     if (!emailMatches) {
       return ctx.render({email: session.email, error: 'Incorrect code'}, {status: 400})
     }
-    const headers = new Headers()
-    headers.set('location', `/reset-password`)
-    return new Response(null, {status: 303, headers})
+    return redirect('/reset-password', 303)
   },
 }
 

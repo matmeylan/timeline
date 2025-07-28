@@ -1,30 +1,20 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
-import {Container} from '../../../components/Container.tsx'
-import {RefillingTokenBucket, Throttler} from '../../../core/auth/rate-limit.ts'
-import {RouteState} from '../../../core/route/state.ts'
+import {Container} from '../../../../components/Container.tsx'
+import {RefillingTokenBucket, Throttler} from '../../../../core/auth/rate-limit.ts'
+import {RouteState} from '../../../../core/route/state.ts'
 import {z, ZodError} from '@zod/zod'
-import {EMAIL_VALIDATION_PATTERN} from '../../../core/serde/email.ts'
-import {UserService} from '../../../core/domain/user.ts'
-import {InvalidPasswordError, UserDoesNotExistError} from '../../../core/domain/user.types.ts'
-import {setSessionTokenCookie} from '../../../core/auth/session.ts'
-import LoginWithPasskeyButton from '../../../islands/auth/login-with-passkey-button.tsx'
+import {EMAIL_VALIDATION_PATTERN} from '../../../../core/serde/email.ts'
+import {UserService} from '../../../../core/domain/user.ts'
+import {InvalidPasswordError, UserDoesNotExistError} from '../../../../core/domain/user.types.ts'
+import {setSessionTokenCookie} from '../../../../core/auth/session.ts'
+import LoginWithPasskeyButton from '../../../../islands/auth/login-with-passkey-button.tsx'
+import {redirect} from '../../../../core/http/redirect.ts'
 
 const throttler = new Throttler<string>([0, 1, 2, 4, 8, 16, 30, 60, 180, 300])
 const ipBucket = new RefillingTokenBucket<string>(20, 1)
 
 export const handler: Handlers<LoginState, RouteState> = {
   GET(req, ctx) {
-    const {user} = ctx.state
-    if (user) {
-      const headers = new Headers()
-      if (user.emailVerified) {
-        headers.set('location', `/`)
-      } else {
-        headers.set('location', `/verify-email`)
-      }
-      return new Response(null, {status: 303, headers})
-    }
-
     const url = new URL(req.url)
     const email = decodeURIComponent(url.searchParams.get('email') || '')
     return ctx.render({form: {email}})
@@ -65,7 +55,7 @@ export const handler: Handlers<LoginState, RouteState> = {
 
       if (!user.emailVerified) {
         headers.set('location', `/verify-email`)
-        return new Response(null, {status: 303, headers})
+        return redirect('/verify-email', 303, headers)
       }
       // TODO
       // if (!user.registered2FA) {
@@ -73,8 +63,7 @@ export const handler: Handlers<LoginState, RouteState> = {
       // }
       // return redirect(302, get2FARedirect(user))
 
-      headers.set('location', `/`)
-      return new Response(null, {status: 303, headers})
+      return redirect('/', 303, headers)
     } catch (err) {
       if (err instanceof UserDoesNotExistError) {
         return ctx.render({error: err.toZod(), form}, {status: 400})

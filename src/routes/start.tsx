@@ -4,6 +4,7 @@ import {JournalService} from '../core/domain/journal.ts'
 import {SlugAlreadyUsed} from '../core/domain/journal.types.ts'
 import {Container} from '../components/Container.tsx'
 import {RouteState} from '../core/route/state.ts'
+import {redirect} from '../core/http/redirect.ts'
 
 export const handler: Handlers<CreateJournalState, RouteState> = {
   async POST(req, ctx) {
@@ -24,9 +25,7 @@ export const handler: Handlers<CreateJournalState, RouteState> = {
     const service = new JournalService()
     try {
       const journal = service.startJournal(result.data)
-      const headers = new Headers()
-      headers.set('location', `/${journal.slug}`)
-      return new Response(null, {status: 303, headers})
+      return redirect(`/${journal.slug}`, 303)
     } catch (err) {
       if (err instanceof SlugAlreadyUsed) {
         return ctx.render(

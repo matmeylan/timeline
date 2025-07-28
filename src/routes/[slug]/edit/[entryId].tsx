@@ -6,6 +6,7 @@ import {ArrowLeftIcon} from '../../../components/icons.tsx'
 import {JournalService} from '../../../core/domain/journal.ts'
 import {Journal, JournalEntry, NotFoundError} from '../../../core/domain/journal.types.ts'
 import ContentEditor from '../../../islands/content-editor/content-editor.tsx'
+import {redirect} from '../../../core/http/redirect.ts'
 
 export const handler: Handlers = {
   GET(req, ctx) {
@@ -42,9 +43,7 @@ export const handler: Handlers = {
     const journal = service.getJournalBySlug(slug)
     service.editEntry(journal.id, entryId, result.data)
 
-    const headers = new Headers()
-    headers.set('location', `/${journal.slug}#${entryId}`)
-    return new Response(null, {status: 303, headers})
+    return redirect(`/${journal.slug}#${entryId}`, 303)
   },
 }
 

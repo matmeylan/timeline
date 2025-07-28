@@ -1,33 +1,31 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
-import {Container} from '../../components/Container.tsx'
+import {Container} from '../../../components/Container.tsx'
 import {
   deleteEmailVerificationCookie,
   getEmailVerificationRequestCookie,
   setEmailVerificationRequestCookie,
-} from '../../core/auth/email-verification.ts'
-import {ExpiringTokenBucket} from '../../core/auth/rate-limit.ts'
-import {UserService} from '../../core/domain/user.ts'
-import {RouteState} from '../../core/route/state.ts'
+} from '../../../core/auth/email-verification.ts'
+import {ExpiringTokenBucket} from '../../../core/auth/rate-limit.ts'
+import {UserService} from '../../../core/domain/user.ts'
+import {RouteState} from '../../../core/route/state.ts'
 import {
   EmailVerificationCodeExpiredError,
   EmailVerificationNotFoundError,
   InvalidEmailVerificationCodeError,
-} from '../../core/domain/user.types.ts'
+} from '../../../core/domain/user.types.ts'
+import assert from 'node:assert'
+import {redirect} from '../../../core/http/redirect.ts'
 
 const bucket = new ExpiringTokenBucket<string>(5, 60 * 30)
 
 export const handler: Handlers<VerifyEmailState, RouteState> = {
   GET(req, ctx) {
     const user = ctx.state.user
-    if (!user) {
-      const headers = new Headers()
-      headers.set('location', `/login`)
-      return new Response(null, {status: 303, headers})
-    }
+    assert(user, 'user not authenticated')
+
+    // already verified ?
     if (user.emailVerified) {
-      const headers = new Headers()
-      headers.set('location', `/`)
-      return new Response(null, {status: 303, headers})
+      return redirect('/', 303)
     }
 
     const headers = new Headers()
@@ -39,18 +37,13 @@ export const handler: Handlers<VerifyEmailState, RouteState> = {
       setEmailVerificationRequestCookie(headers, request)
     }
 
-    const url = new URL(req.url)
-    const resentTo = url.searchParams.get('resent_to')
-
+    const resentTo = new URL(req.url).searchParams.get('resent_to')
     return ctx.render({email: request.email, resentTo: resentTo ? decodeURIComponent(resentTo) : undefined})
   },
   async POST(req, ctx) {
     const user = ctx.state.user
-    if (!user) {
-      const headers = new Headers()
-      headers.set('location', `/login`)
-      return new Response(null, {status: 303, headers})
-    }
+    assert(user, 'user not authenticated')
+
     if (!bucket.check(user.id, 1)) {
       return ctx.render({email: user.email, rateLimitError: 'Too many requests'}, {status: 429})
     }
@@ -97,8 +90,7 @@ export const handler: Handlers<VerifyEmailState, RouteState> = {
     // verified, we can get rid of the cookie
     deleteEmailVerificationCookie(headers)
 
-    headers.set('location', `/`)
-    return new Response(null, {status: 303, headers})
+    return redirect('/', 303, headers)
   },
 }
 

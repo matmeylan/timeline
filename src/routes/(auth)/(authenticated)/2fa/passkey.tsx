@@ -1,9 +1,9 @@
 import {FreshContext, Handlers, PageProps} from '$fresh/server.ts'
 import {encodeBase64} from '@oslojs/encoding'
-import {Container} from '../../../components/Container.tsx'
-import {RouteState} from '../../../core/route/state.ts'
-import {User2FAService} from '../../../core/domain/user-2fa.ts'
-import {formatDate} from '../../../core/date/format-date.ts'
+import {Container} from '../../../../components/Container.tsx'
+import {RouteState} from '../../../../core/route/state.ts'
+import {User2FAService} from '../../../../core/domain/user-2fa.ts'
+import {formatDate} from '../../../../core/date/format-date.ts'
 import {decodeBase64} from '@oslojs/encoding'
 import type {
   AttestationStatement,
@@ -23,23 +23,20 @@ import {
 } from '@oslojs/webauthn'
 import {ECDSAPublicKey, p256} from '@oslojs/crypto/ecdsa'
 import {RSAPublicKey} from '@oslojs/crypto/rsa'
-import {verifyWebAuthnChallenge} from '../../../core/auth/webauthn.ts'
-import {TooMany2faCredentialsError, WebAuthnUserCredential} from '../../../core/domain/user-2fa.types.ts'
-import {Session, User} from '../../../core/domain/user.types.ts'
-import RegisterPasskeyButton from '../../../islands/auth/register-passkey-button.tsx'
+import {verifyWebAuthnChallenge} from '../../../../core/auth/webauthn.ts'
+import {TooMany2faCredentialsError, WebAuthnUserCredential} from '../../../../core/domain/user-2fa.types.ts'
+import {Session, User} from '../../../../core/domain/user.types.ts'
+import RegisterPasskeyButton from '../../../../islands/auth/register-passkey-button.tsx'
+import assert from 'node:assert'
+import {redirect} from '../../../../core/http/redirect.ts'
 
 export const handler: Handlers<PasskeysState, RouteState> = {
   GET(req, ctx) {
-    const {user, session} = ctx.state
-    if (!user || !session) {
-      const headers = new Headers()
-      headers.set('location', `/login`)
-      return new Response(null, {status: 303, headers})
-    }
+    const {user} = ctx.state
+    assert(user, 'user not authenticated')
+
     if (!user.emailVerified) {
-      const headers = new Headers()
-      headers.set('location', `/verify-email`)
-      return new Response(null, {status: 303, headers})
+      return redirect('/verify-email', 303)
     }
 
     const user2FAService = new User2FAService()
@@ -49,22 +46,11 @@ export const handler: Handlers<PasskeysState, RouteState> = {
   },
   async POST(req, ctx) {
     const {user, session} = ctx.state
-    if (!user || !session) {
-      const headers = new Headers()
-      headers.set('location', `/login`)
-      return new Response(null, {status: 303, headers})
-    }
-    if (!user.emailVerified) {
-      const headers = new Headers()
-      headers.set('location', `/verify-email`)
-      return new Response(null, {status: 303, headers})
-    }
+    assert(user, 'user not authenticated')
+    assert(session, 'session not found')
 
-    console.log(req.url)
     const formData = await req.formData()
     const action = formData.get('action')
-
-    console.log('triggering action')
     if (action === 'delete') {
       return deletePasskey(formData, user, ctx)
     } else if (action === 'add') {
@@ -138,7 +124,6 @@ function deletePasskey(formData: FormData, user: User, ctx: FreshContext<RouteSt
 }
 
 function addPasskey(formData: FormData, user: User, session: Session, ctx: FreshContext<RouteState, PasskeysState>) {
-  const headers = new Headers()
   const encodedAttestationObject = formData.get('attestationObject')
   const encodedClientDataJSON = formData.get('clientDataJson')
   const name = new Date().toISOString() // name is the date when it was generated ?
@@ -274,6 +259,5 @@ function addPasskey(formData: FormData, user: User, session: Session, ctx: Fresh
     user2FAService.setSessionAs2FAVerified(session.id)
   }
 
-  headers.set('location', `/2fa/passkey`)
-  return new Response(null, {status: 303, headers})
+  return redirect('/2fa/passkey', 303)
 }

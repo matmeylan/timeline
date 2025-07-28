@@ -1,13 +1,13 @@
 import {Handlers} from '$fresh/server.ts'
 import z from '@zod/zod'
-import {RouteState} from '../../../core/route/state.ts'
+import {RouteState} from '../../../../core/route/state.ts'
 import {decodeBase64} from '@oslojs/encoding'
 import type {ClientData, AuthenticatorData} from '@oslojs/webauthn'
 import {parseClientDataJSON, ClientDataType, parseAuthenticatorData} from '@oslojs/webauthn'
-import {verifyWebAuthnChallenge} from '../../../core/auth/webauthn.ts'
-import {User2FAService} from '../../../core/domain/user-2fa.ts'
-import {setSessionTokenCookie} from '../../../core/auth/session.ts'
-import {CredentialNotFoundError, InvalidCredentialError} from '../../../core/domain/user-2fa.types.ts'
+import {verifyWebAuthnChallenge} from '../../../../core/auth/webauthn.ts'
+import {User2FAService} from '../../../../core/domain/user-2fa.ts'
+import {setSessionTokenCookie} from '../../../../core/auth/session.ts'
+import {CredentialNotFoundError, InvalidCredentialError} from '../../../../core/domain/user-2fa.types.ts'
 
 // Stricter rate limiting can be omitted here since creating challenges are rate-limited
 

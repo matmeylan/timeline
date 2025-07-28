@@ -1,14 +1,13 @@
 import {encodeBase32LowerCaseNoPadding} from '@oslojs/encoding'
-import {setCookie, getCookies, deleteCookie} from '@std/http'
+import {deleteCookie, getCookies, setCookie} from '@std/http'
 
 export function generateSessionToken(): string {
   const tokenBytes = new Uint8Array(20)
   crypto.getRandomValues(tokenBytes)
-  const token = encodeBase32LowerCaseNoPadding(tokenBytes)
-  return token
+  return encodeBase32LowerCaseNoPadding(tokenBytes)
 }
 
-export const SESSION_COOKIE_NAME = 'session'
+const SESSION_COOKIE_NAME = 'session'
 
 export function setSessionTokenCookie(headers: Headers, token: string, expiresAt: Date | string): void {
   setCookie(headers, {
@@ -28,4 +27,8 @@ export function getSessionTokenCookie(headers: Headers) {
 
 export function deleteSessionTokenCookie(headers: Headers) {
   deleteCookie(headers, SESSION_COOKIE_NAME)
+}
+
+export function hasSessionTokenSetInResponse(res: Response): boolean {
+  return res.headers.getSetCookie().some(value => value.includes(SESSION_COOKIE_NAME))
 }

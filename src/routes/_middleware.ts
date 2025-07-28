@@ -1,5 +1,10 @@
 import {FreshContext} from '$fresh/server.ts'
-import {deleteSessionTokenCookie, getSessionTokenCookie, setSessionTokenCookie} from '../core/auth/session.ts'
+import {
+  deleteSessionTokenCookie,
+  getSessionTokenCookie,
+  hasSessionTokenSetInResponse,
+  setSessionTokenCookie,
+} from '../core/auth/session.ts'
 import {UserService} from '../core/domain/user.ts'
 import {RouteState} from '../core/route/state.ts'
 
@@ -19,13 +24,16 @@ export async function handler(req: Request, ctx: FreshContext<RouteState>) {
   ctx.state.user = user
   ctx.state.session = session
 
-  console.log({user, session})
+  console.debug(`${req.method} ${req.url}`, {user})
 
   const res = await ctx.next()
 
   // validateSessionToken may have refreshed it
   if (session) {
-    setSessionTokenCookie(res.headers, token, session.expiresAt)
+    // if a handler already set a session in the cookies, don't override it!
+    if (!hasSessionTokenSetInResponse(res)) {
+      setSessionTokenCookie(res.headers, token, session.expiresAt)
+    }
   } else {
     deleteSessionTokenCookie(res.headers)
   }

@@ -1,7 +1,7 @@
 import {ZodError} from '@zod/zod'
 import {Zodable} from '../serde/zod.ts'
-import {LoginSchemaInput} from '../../routes/(auth)/login/index.tsx'
-import {SignupSchemaInput} from '../../routes/(auth)/signup.tsx'
+import {LoginSchemaInput} from '../../routes/(auth)/(guest)/login/index.tsx'
+import {SignupSchemaInput} from '../../routes/(auth)/(guest)/signup.tsx'
 
 export interface User {
   id: string

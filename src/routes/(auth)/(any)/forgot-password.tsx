@@ -1,29 +1,19 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
 import z, {ZodError} from '@zod/zod'
-import {Container} from '../../components/Container.tsx'
-import {RouteState} from '../../core/route/state.ts'
-import {RefillingTokenBucket} from '../../core/auth/rate-limit.ts'
-import {EMAIL_VALIDATION_PATTERN} from '../../core/serde/email.ts'
-import {UserDoesNotExistError} from '../../core/domain/user.types.ts'
-import {UserService} from '../../core/domain/user.ts'
-import {setPasswordResetSessionTokenCookie} from '../../core/auth/password.ts'
+import {Container} from '../../../components/Container.tsx'
+import {RouteState} from '../../../core/route/state.ts'
+import {RefillingTokenBucket} from '../../../core/auth/rate-limit.ts'
+import {EMAIL_VALIDATION_PATTERN} from '../../../core/serde/email.ts'
+import {UserDoesNotExistError} from '../../../core/domain/user.types.ts'
+import {UserService} from '../../../core/domain/user.ts'
+import {setPasswordResetSessionTokenCookie} from '../../../core/auth/password.ts'
+import {redirect} from '../../../core/http/redirect.ts'
 
 const ipBucket = new RefillingTokenBucket<string>(3, 60)
 const userBucket = new RefillingTokenBucket<string>(3, 60)
 
 export const handler: Handlers<ForgotPasswordState, RouteState> = {
   GET(req, ctx) {
-    const {user} = ctx.state
-    if (user) {
-      const headers = new Headers()
-      if (user.emailVerified) {
-        headers.set('location', `/`)
-      } else {
-        headers.set('location', `/verify-email`)
-      }
-      return new Response(null, {status: 303, headers})
-    }
-
     const url = new URL(req.url)
     const email = decodeURIComponent(url.searchParams.get('email') || '')
     return ctx.render({form: {email}})
@@ -58,8 +48,7 @@ export const handler: Handlers<ForgotPasswordState, RouteState> = {
 
       const headers = new Headers()
       setPasswordResetSessionTokenCookie(headers, sessionToken, session.expiresAt)
-      headers.set('location', '/reset-password/verify-email')
-      return new Response(null, {status: 303, headers})
+      return redirect('/reset-password/verify-email', 303, headers)
     } catch (err) {
       if (err instanceof UserDoesNotExistError) {
         return ctx.render({error: err.toZod(), form}, {status: 400})
