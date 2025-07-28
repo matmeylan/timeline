@@ -6,6 +6,8 @@ import {SignupSchemaInput} from '../../routes/(auth)/signup.tsx'
 export interface User {
   id: string
   email: string
+  username: string
+  name: string
   emailVerified: boolean
   registeredTOTP: boolean
   registeredSecurityKey: boolean
@@ -69,6 +71,18 @@ export class EmailAlreadyUsedError extends Error implements Zodable<SignupSchema
   toZod() {
     return new ZodError([
       {input: this.email, code: 'custom', path: ['email'], message: this.message},
+    ]) as ZodError<SignupSchemaInput>
+  }
+}
+
+export class UsernameAlreadyUsedError extends Error implements Zodable<SignupSchemaInput> {
+  constructor(private readonly username: string) {
+    super(`Username ${username} is already taken. Please choose another username`)
+  }
+
+  toZod() {
+    return new ZodError([
+      {input: this.username, code: 'custom', path: ['username'], message: this.message},
     ]) as ZodError<SignupSchemaInput>
   }
 }

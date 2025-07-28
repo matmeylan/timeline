@@ -22,7 +22,7 @@ export default function Home(props: PageProps<HomeState>) {
       />
       <h1 class="text-4xl font-bold">
         {user ? (
-          <> Welcome, {user.email}</>
+          <> Welcome, {user.name}</>
         ) : (
           <>
             Welcome to <span class="inline-block rotate-6">Journals</span>

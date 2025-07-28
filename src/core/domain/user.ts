@@ -1,4 +1,4 @@
-import {SqliteClient, isUniqueConstraintError} from '../database/sqlite.ts'
+import {SqliteClient, isUniqueConstraintErrorForField} from '../database/sqlite.ts'
 import {
   EmailVerificationRequest,
   InternalUser,
@@ -14,6 +14,7 @@ import {
   UserDoesNotExistError,
   InvalidPasswordError,
   PasswordResetSession,
+  UsernameAlreadyUsedError,
 } from './user.types.ts'
 import {
   hashPassword,
@@ -32,7 +33,8 @@ import {subDays, addDays, addMinutes} from 'date-fns'
 export class UserService {
   constructor(private readonly client: SqliteClient = new SqliteClient()) {}
 
-  async createUser(rawEmail: string, password: string) {
+  async createUser(input: {email: string; password: string; username: string; name: string}) {
+    const {email: rawEmail, password} = input
     const strongPassword = verifyPasswordStrength(password)
     if (!strongPassword) {
       throw new WeakPasswordError()
@@ -45,6 +47,8 @@ export class UserService {
     const user: InternalUser = {
       id: crypto.randomUUID(),
       email,
+      username: input.username.trim(),
+      name: input.name.trim(),
       passwordHash,
       recoveryCode: encryptedRecoveryCode,
       emailVerified: false,
@@ -54,14 +58,16 @@ export class UserService {
       registered2FA: false,
     }
     const createUserStmt = this.client.db.prepare(
-      `INSERT INTO user (id, email, password_hash, recovery_code)
-      VALUES (:id, :email, :passwordHash, :recoveryCode)`,
+      `INSERT INTO user (id, email, password_hash, recovery_code, name, username)
+      VALUES (:id, :email, :passwordHash, :recoveryCode, :name, :username)`,
     )
     const createUser = {
       id: user.id,
       email: user.email,
       passwordHash: user.passwordHash,
       recoveryCode: user.recoveryCode,
+      username: user.username,
+      name: user.name,
     }
 
     const {
@@ -84,8 +90,10 @@ export class UserService {
         createSessionStmt.run(createSession)
       })()
     } catch (err) {
-      if (isUniqueConstraintError(err)) {
+      if (isUniqueConstraintErrorForField(err, 'user', 'email')) {
         throw new EmailAlreadyUsedError(email)
+      } else if (isUniqueConstraintErrorForField(err, 'user', 'username')) {
+        throw new UsernameAlreadyUsedError(user.username)
       }
       throw err
     }
@@ -200,7 +208,7 @@ export class UserService {
       `
         SELECT 
           session.id, session.user_id, session.expires_at, session.two_factor_verified, 
-          user.email, user.email_verified, 
+          user.email, user.email_verified, user.name, user.username,
           IIF(totp_credential.id IS NOT NULL, 1, 0) as registered_otp, 
           IIF(passkey_credential.id IS NOT NULL, 1, 0) as registered_passkey,  
           IIF(security_key_credential.id IS NOT NULL, 1, 0) as registered_seckey 
@@ -219,6 +227,8 @@ export class UserService {
       two_factor_verified: number
       email: string
       email_verified: number
+      name: string
+      username: string
       registered_otp: boolean
       registered_passkey: boolean
       registered_seckey: boolean
@@ -236,6 +246,8 @@ export class UserService {
     const user: User = {
       id: res.user_id,
       email: res.email,
+      username: res.username,
+      name: res.name,
       emailVerified: Boolean(res.email_verified),
       registeredTOTP: Boolean(res.registered_otp),
       registeredPasskey: Boolean(res.registered_passkey),
@@ -271,7 +283,8 @@ export class UserService {
 
   getUserByEmail(email: string): User {
     const stmt = this.client.db.prepare(
-      `SELECT user.id, user.email, user.email_verified, IIF(totp_credential.id IS NOT NULL, 1, 0), IIF(passkey_credential.id IS NOT NULL, 1, 0), IIF(security_key_credential.id IS NOT NULL, 1, 0) FROM user
+      `SELECT user.id, user.email, user.email_verified, user.username, user.name, IIF(totp_credential.id IS NOT NULL, 1, 0), IIF(passkey_credential.id IS NOT NULL, 1, 0), IIF(security_key_credential.id IS NOT NULL, 1, 0) 
+        FROM user
         LEFT JOIN totp_credential ON user.id = totp_credential.user_id
         LEFT JOIN passkey_credential ON user.id = passkey_credential.user_id
         LEFT JOIN security_key_credential ON user.id = security_key_credential.user_id
@@ -282,6 +295,8 @@ export class UserService {
       id: string
       email: string
       email_verified: number
+      username: string
+      name: string
       registered_otp: boolean
       registered_passkey: boolean
       registered_seckey: boolean
@@ -295,6 +310,8 @@ export class UserService {
       id: res.id,
       email: res.email,
       emailVerified: Boolean(res.email_verified),
+      username: res.username,
+      name: res.name,
       registeredTOTP: Boolean(res.registered_otp),
       registeredPasskey: Boolean(res.registered_passkey),
       registeredSecurityKey: Boolean(res.registered_seckey),
@@ -366,7 +383,7 @@ export class UserService {
       `
       SELECT 
         password_reset_session.id, password_reset_session.user_id, password_reset_session.email, password_reset_session.code, password_reset_session.expires_at, password_reset_session.email_verified,
-        user.email_verified as user_email_verified, 
+        user.email_verified as user_email_verified, user.name, user.username,
         IIF(totp_credential.id IS NOT NULL, 1, 0) as registered_otp, 
         IIF(passkey_credential.id IS NOT NULL, 1, 0) as registered_passkey,  
         IIF(security_key_credential.id IS NOT NULL, 1, 0) as registered_seckey 
@@ -385,6 +402,8 @@ export class UserService {
       code: string
       expires_at: string
       email_verified: number
+      name: string
+      username: string
       user_email_verified: number
       registered_otp: boolean
       registered_passkey: boolean
@@ -404,6 +423,8 @@ export class UserService {
     const user: User = {
       id: res.user_id,
       email: res.email,
+      name: res.name,
+      username: res.username,
       emailVerified: Boolean(res.user_email_verified),
       registeredTOTP: Boolean(res.registered_otp),
       registeredPasskey: Boolean(res.registered_passkey),
@@ -454,6 +475,8 @@ export class UserService {
       id: internal.email,
       email: internal.email,
       emailVerified: internal.emailVerified,
+      username: internal.username,
+      name: internal.name,
       registeredTOTP: internal.registeredTOTP,
       registeredPasskey: internal.registeredPasskey,
       registeredSecurityKey: internal.registeredSecurityKey,

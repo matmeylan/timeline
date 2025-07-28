@@ -8,6 +8,8 @@ export class Auth1752323483 implements Migration {
       CREATE TABLE user (
           id TEXT PRIMARY KEY,
           email TEXT NOT NULL UNIQUE,
+          username TEXT NOT NULL UNIQUE,
+          name TEXT NOT NULL,
           password_hash TEXT NOT NULL,
           email_verified INTEGER NOT NULL DEFAULT 0,
           recovery_code BLOB NOT NULL

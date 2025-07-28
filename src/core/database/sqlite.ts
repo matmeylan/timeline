@@ -26,3 +26,7 @@ export class SqliteClient {
 export function isUniqueConstraintError(err: unknown): boolean {
   return err instanceof Error && err.message.includes('UNIQUE constraint failed')
 }
+
+export function isUniqueConstraintErrorForField(err: unknown, table: string, field: string): boolean {
+  return isUniqueConstraintError(err) && err instanceof Error && err.message.includes(`${table}.${field}`)
+}
