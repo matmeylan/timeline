@@ -52,10 +52,7 @@ export class UserService {
       passwordHash,
       recoveryCode: encryptedRecoveryCode,
       emailVerified: false,
-      registeredTOTP: false,
       registeredPasskey: false,
-      registeredSecurityKey: false,
-      registered2FA: false,
     }
     const createUserStmt = this.client.db.prepare(
       `INSERT INTO user (id, email, password_hash, recovery_code, name, username)
@@ -217,14 +214,10 @@ export class UserService {
         SELECT 
           session.id, session.user_id, session.expires_at, session.two_factor_verified, 
           user.email, user.email_verified, user.name, user.username,
-          IIF(totp_credential.id IS NOT NULL, 1, 0) as registered_otp, 
-          IIF(passkey_credential.id IS NOT NULL, 1, 0) as registered_passkey,  
-          IIF(security_key_credential.id IS NOT NULL, 1, 0) as registered_seckey 
+          IIF(passkey_credential.id IS NOT NULL, 1, 0) as registered_passkey
         FROM session
         INNER JOIN user ON session.user_id = user.id
-        LEFT JOIN totp_credential ON session.user_id = totp_credential.user_id
         LEFT JOIN passkey_credential ON user.id = passkey_credential.user_id
-        LEFT JOIN security_key_credential ON user.id = security_key_credential.user_id
         WHERE session.id = :sessionId
     `,
     )
@@ -237,9 +230,7 @@ export class UserService {
       email_verified: number
       name: string
       username: string
-      registered_otp: boolean
       registered_passkey: boolean
-      registered_seckey: boolean
     }>({sessionId})
     if (!res) {
       return {session: null, user: null}
@@ -257,13 +248,7 @@ export class UserService {
       username: res.username,
       name: res.name,
       emailVerified: Boolean(res.email_verified),
-      registeredTOTP: Boolean(res.registered_otp),
       registeredPasskey: Boolean(res.registered_passkey),
-      registeredSecurityKey: Boolean(res.registered_seckey),
-      registered2FA: false,
-    }
-    if (user.registeredPasskey || user.registeredSecurityKey || user.registeredTOTP) {
-      user.registered2FA = true
     }
     const now = new Date()
     if (now >= new Date(session.expiresAt)) {
@@ -291,11 +276,9 @@ export class UserService {
 
   getUserByEmail(email: string): User {
     const stmt = this.client.db.prepare(
-      `SELECT user.id, user.email, user.email_verified, user.username, user.name, IIF(totp_credential.id IS NOT NULL, 1, 0), IIF(passkey_credential.id IS NOT NULL, 1, 0), IIF(security_key_credential.id IS NOT NULL, 1, 0) 
+      `SELECT user.id, user.email, user.email_verified, user.username, user.name, IIF(passkey_credential.id IS NOT NULL, 1, 0)
         FROM user
-        LEFT JOIN totp_credential ON user.id = totp_credential.user_id
         LEFT JOIN passkey_credential ON user.id = passkey_credential.user_id
-        LEFT JOIN security_key_credential ON user.id = security_key_credential.user_id
         WHERE user.email = :email`,
     )
 
@@ -305,9 +288,7 @@ export class UserService {
       email_verified: number
       username: string
       name: string
-      registered_otp: boolean
       registered_passkey: boolean
-      registered_seckey: boolean
     }>({email})
 
     if (!res) {
@@ -320,13 +301,7 @@ export class UserService {
       emailVerified: Boolean(res.email_verified),
       username: res.username,
       name: res.name,
-      registeredTOTP: Boolean(res.registered_otp),
       registeredPasskey: Boolean(res.registered_passkey),
-      registeredSecurityKey: Boolean(res.registered_seckey),
-      registered2FA: false,
-    }
-    if (user.registeredPasskey || user.registeredSecurityKey || user.registeredTOTP) {
-      user.registered2FA = true
     }
     return user
   }
@@ -392,14 +367,10 @@ export class UserService {
       SELECT 
         password_reset_session.id, password_reset_session.user_id, password_reset_session.email, password_reset_session.code, password_reset_session.expires_at, password_reset_session.email_verified,
         user.email_verified as user_email_verified, user.name, user.username,
-        IIF(totp_credential.id IS NOT NULL, 1, 0) as registered_otp, 
-        IIF(passkey_credential.id IS NOT NULL, 1, 0) as registered_passkey,  
-        IIF(security_key_credential.id IS NOT NULL, 1, 0) as registered_seckey 
+        IIF(passkey_credential.id IS NOT NULL, 1, 0) as registered_passkey
       FROM password_reset_session
       INNER JOIN user ON password_reset_session.user_id = user.id
-      LEFT JOIN totp_credential ON user.id = totp_credential.user_id
       LEFT JOIN passkey_credential ON user.id = passkey_credential.user_id
-      LEFT JOIN security_key_credential ON user.id = security_key_credential.user_id
       WHERE password_reset_session.id = :sessionId
       `,
     )
@@ -413,9 +384,7 @@ export class UserService {
       name: string
       username: string
       user_email_verified: number
-      registered_otp: boolean
       registered_passkey: boolean
-      registered_seckey: boolean
     }>({sessionId})
     if (!res) {
       return {session: null, user: null}
@@ -434,13 +403,7 @@ export class UserService {
       name: res.name,
       username: res.username,
       emailVerified: Boolean(res.user_email_verified),
-      registeredTOTP: Boolean(res.registered_otp),
       registeredPasskey: Boolean(res.registered_passkey),
-      registeredSecurityKey: Boolean(res.registered_seckey),
-      registered2FA: false,
-    }
-    if (user.registeredPasskey || user.registeredSecurityKey || user.registeredTOTP) {
-      user.registered2FA = true
     }
     if (new Date() >= new Date(session.expiresAt)) {
       this.client.db.sql`DELETE FROM password_reset_session WHERE id = ${session.id}`
@@ -485,10 +448,7 @@ export class UserService {
       emailVerified: internal.emailVerified,
       username: internal.username,
       name: internal.name,
-      registeredTOTP: internal.registeredTOTP,
       registeredPasskey: internal.registeredPasskey,
-      registeredSecurityKey: internal.registeredSecurityKey,
-      registered2FA: internal.registered2FA,
     }
   }
 }

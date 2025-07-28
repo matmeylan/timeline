@@ -9,10 +9,7 @@ export interface User {
   username: string
   name: string
   emailVerified: boolean
-  registeredTOTP: boolean
-  registeredSecurityKey: boolean
   registeredPasskey: boolean
-  registered2FA: boolean
 }
 
 export interface InternalUser extends User {

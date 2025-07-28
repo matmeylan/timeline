@@ -16,6 +16,7 @@ export class Auth1752323483 implements Migration {
       );
 
       CREATE INDEX email_index ON user(email);
+      CREATE INDEX username_index ON user(username);
 
       CREATE TABLE session (
           id TEXT NOT NULL PRIMARY KEY,
@@ -42,12 +43,6 @@ export class Auth1752323483 implements Migration {
           two_factor_verified INTEGER NOT NULL DEFAULT 0
       );
 
-      CREATE TABLE totp_credential (
-          id INTEGER NOT NULL PRIMARY KEY,
-          user_id TEXT NOT NULL UNIQUE REFERENCES user(id),
-          key BLOB NOT NULL
-      );
-
       CREATE TABLE passkey_credential (
           id BLOB NOT NULL PRIMARY KEY,
           user_id TEXT NOT NULL REFERENCES user(id),
@@ -55,15 +50,6 @@ export class Auth1752323483 implements Migration {
           algorithm INTEGER NOT NULL,
           public_key BLOB NOT NULL
       );
-
-      CREATE TABLE security_key_credential (
-          id BLOB NOT NULL PRIMARY KEY,
-          user_id TEXT NOT NULL REFERENCES user(id),
-          name TEXT NOT NULL,
-          algorithm INTEGER NOT NULL,
-          public_key BLOB NOT NULL
-      );
-
     `)
   }
 }

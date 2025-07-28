@@ -54,15 +54,8 @@ export const handler: Handlers<LoginState, RouteState> = {
       setSessionTokenCookie(headers, sessionToken, session.expiresAt)
 
       if (!user.emailVerified) {
-        headers.set('location', `/verify-email`)
         return redirect('/verify-email', 303, headers)
       }
-      // TODO
-      // if (!user.registered2FA) {
-      //   return redirect(302, '/2fa/setup')
-      // }
-      // return redirect(302, get2FARedirect(user))
-
       return redirect('/', 303, headers)
     } catch (err) {
       if (err instanceof UserDoesNotExistError) {
