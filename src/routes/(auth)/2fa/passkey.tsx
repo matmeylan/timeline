@@ -38,7 +38,7 @@ export const handler: Handlers<PasskeysState, RouteState> = {
     }
     if (!user.emailVerified) {
       const headers = new Headers()
-      headers.set('location', `/verify`)
+      headers.set('location', `/verify-email`)
       return new Response(null, {status: 303, headers})
     }
 
@@ -56,7 +56,7 @@ export const handler: Handlers<PasskeysState, RouteState> = {
     }
     if (!user.emailVerified) {
       const headers = new Headers()
-      headers.set('location', `/verify`)
+      headers.set('location', `/verify-email`)
       return new Response(null, {status: 303, headers})
     }
 

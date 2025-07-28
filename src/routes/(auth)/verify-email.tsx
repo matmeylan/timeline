@@ -39,7 +39,10 @@ export const handler: Handlers<VerifyEmailState, RouteState> = {
       setEmailVerificationRequestCookie(headers, request)
     }
 
-    return ctx.render({email: request.email})
+    const url = new URL(req.url)
+    const resentTo = url.searchParams.get('resent_to')
+
+    return ctx.render({email: request.email, resentTo: resentTo ? decodeURIComponent(resentTo) : undefined})
   },
   async POST(req, ctx) {
     const user = ctx.state.user
@@ -99,8 +102,8 @@ export const handler: Handlers<VerifyEmailState, RouteState> = {
   },
 }
 
-export default function Verify(props: PageProps<VerifyEmailState>) {
-  const {email, error, rateLimitError} = props.data
+export default function VerifyEmailPage(props: PageProps<VerifyEmailState>) {
+  const {email, error, rateLimitError, resentTo} = props.data
   return (
     <Container class="mt-16 lg:mt-32">
       <h1 class="text-4xl font-bold">Verify your email</h1>
@@ -112,10 +115,14 @@ export default function Verify(props: PageProps<VerifyEmailState>) {
         <button type="submit">Verify</button>
         {rateLimitError && <p>{rateLimitError}</p>}
       </form>
-      <div>
-        <a class="mt-4" href="/verify-resend">
-          Resend code (TODO and rename to verify-email)
-        </a>
+      <div class="mt-4">
+        {resentTo ? (
+          <p>A code has been resent to {resentTo}</p>
+        ) : (
+          <form method="post" action="/verify-email-resend">
+            <button type="submit">Resend code</button>
+          </form>
+        )}
       </div>
     </Container>
   )
@@ -123,6 +130,7 @@ export default function Verify(props: PageProps<VerifyEmailState>) {
 
 interface VerifyEmailState {
   email: string
+  resentTo?: string
   error?: string
   rateLimitError?: string
 }

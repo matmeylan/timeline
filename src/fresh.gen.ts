@@ -10,7 +10,8 @@ import * as $_auth_reset_password_index from "./routes/(auth)/reset-password/ind
 import * as $_auth_reset_password_verify_email from "./routes/(auth)/reset-password/verify-email.tsx";
 import * as $_auth_signout from "./routes/(auth)/signout.tsx";
 import * as $_auth_signup from "./routes/(auth)/signup.tsx";
-import * as $_auth_verify from "./routes/(auth)/verify.tsx";
+import * as $_auth_verify_email_resend from "./routes/(auth)/verify-email-resend.tsx";
+import * as $_auth_verify_email from "./routes/(auth)/verify-email.tsx";
 import * as $_slug_ from "./routes/[slug].tsx";
 import * as $_slug_edit_entryId_ from "./routes/[slug]/edit/[entryId].tsx";
 import * as $_slug_write from "./routes/[slug]/write.tsx";
@@ -42,7 +43,8 @@ const manifest = {
       $_auth_reset_password_verify_email,
     "./routes/(auth)/signout.tsx": $_auth_signout,
     "./routes/(auth)/signup.tsx": $_auth_signup,
-    "./routes/(auth)/verify.tsx": $_auth_verify,
+    "./routes/(auth)/verify-email-resend.tsx": $_auth_verify_email_resend,
+    "./routes/(auth)/verify-email.tsx": $_auth_verify_email,
     "./routes/[slug].tsx": $_slug_,
     "./routes/[slug]/edit/[entryId].tsx": $_slug_edit_entryId_,
     "./routes/[slug]/write.tsx": $_slug_write,

@@ -19,7 +19,7 @@ export const handler: Handlers<SignupState, RouteState> = {
       if (user.emailVerified) {
         headers.set('location', `/`)
       } else {
-        headers.set('location', `/verify`)
+        headers.set('location', `/verify-email`)
       }
       return new Response(null, {status: 303, headers})
     }
@@ -62,7 +62,7 @@ export const handler: Handlers<SignupState, RouteState> = {
       setEmailVerificationRequestCookie(headers, emailVerificationRequest)
       setSessionTokenCookie(headers, sessionToken, session.expiresAt)
 
-      headers.set('location', `/verify`)
+      headers.set('location', `/verify-email`)
       return new Response(null, {status: 302, headers})
     } catch (err) {
       if (

@@ -180,6 +180,14 @@ export class UserService {
     console.log(`To ${email}: Your verification code is ${code}`)
   }
 
+  resendVerificationEmail(user: User, verificationId: string) {
+    const request = this.getCurrentEmailVerificationRequest(user, verificationId)
+    if (!request) {
+      throw new EmailVerificationNotFoundError(verificationId)
+    }
+    this.sendVerificationEmail(user.email, request.code)
+  }
+
   private createSession(userId: string, flags: SessionFlags) {
     const token = generateSessionToken()
     const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
