@@ -27,11 +27,13 @@ import {encodeBase32LowerCaseNoPadding, encodeHexLowerCase} from '@oslojs/encodi
 import {sha256} from '@oslojs/crypto/sha2'
 import {addMinutes} from 'date-fns'
 import {SessionService} from './session.ts'
+import {EmailService} from '../../email/email.ts'
 
 export class UserService {
   constructor(
     private readonly client: SqliteClient = new SqliteClient(),
     private readonly sessionService: SessionService = new SessionService(client),
+    private readonly emailService: EmailService = new EmailService(),
   ) {}
 
   async createUser(input: {email: string; password: string; username: string; name: string}) {
@@ -175,7 +177,7 @@ export class UserService {
   }
 
   private sendVerificationEmail(email: string, code: string): void {
-    console.log(`To ${email}: Your verification code is ${code}`)
+    this.emailService.sendEmail(email, `Your verification code is ${code}`)
   }
 
   resendVerificationEmail(user: User, verificationId: string) {
@@ -270,7 +272,7 @@ export class UserService {
   }
 
   private sendPasswordResetEmail(email: string, code: string): void {
-    console.log(`To ${email}: Your reset code is ${code}`)
+    this.emailService.sendEmail(email, `Your reset code is ${code}`)
   }
 
   validatePasswordResetSessionRequest(token: string) {
