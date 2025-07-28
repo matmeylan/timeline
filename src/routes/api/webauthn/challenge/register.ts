@@ -4,7 +4,7 @@ import {createWebAuthnChallenge, generateRandomCredentialsId} from '../../../../
 import {encodeBase64} from '@oslojs/encoding'
 import {PasskeyService} from '../../../../core/domain/user/passkey.ts'
 import {getSessionTokenCookie} from '../../../../core/auth/session.ts'
-import {UserService} from '../../../../core/domain/user/user.ts'
+import {SessionService} from '../../../../core/domain/user/session.ts'
 
 const rateLimitBucket = new RefillingTokenBucket<string>(30, 10)
 
@@ -21,8 +21,8 @@ export const handler: Handlers = {
       return new Response('Unauthenticated', {status: 401})
     }
 
-    const userService = new UserService()
-    const {session, user} = userService.validateSessionToken(token)
+    const sessionService = new SessionService()
+    const {session, user} = sessionService.validateSessionToken(token)
     if (!session || !user) {
       return new Response('Forbidden', {status: 403})
     }

@@ -5,8 +5,8 @@ import {
   hasSessionTokenSetInResponse,
   setSessionTokenCookie,
 } from '../core/auth/session.ts'
-import {UserService} from '../core/domain/user/user.ts'
 import {RouteState} from '../core/route/state.ts'
+import {SessionService} from '../core/domain/user/session.ts'
 
 export async function handler(req: Request, ctx: FreshContext<RouteState>) {
   if (ctx.destination !== 'route') {
@@ -18,8 +18,8 @@ export async function handler(req: Request, ctx: FreshContext<RouteState>) {
     return ctx.next()
   }
 
-  const userService = new UserService()
-  const {session, user} = userService.validateSessionToken(token)
+  const sessionService = new SessionService()
+  const {session, user} = sessionService.validateSessionToken(token)
 
   ctx.state.user = user
   ctx.state.session = session
@@ -28,7 +28,7 @@ export async function handler(req: Request, ctx: FreshContext<RouteState>) {
 
   const res = await ctx.next()
 
-  // validateSessionToken may have refreshed it
+  // validateSessionToken may have refreshed it, set cookie if necessary
   if (session) {
     // if a handler already set a session in the cookies, don't override it!
     if (!hasSessionTokenSetInResponse(res)) {

@@ -1,37 +1,38 @@
-import {SqliteClient, isUniqueConstraintErrorForField} from '../../database/sqlite.ts'
+import {isUniqueConstraintErrorForField, SqliteClient} from '../../database/sqlite.ts'
 import {
+  EmailAlreadyUsedError,
+  EmailVerificationCodeExpiredError,
+  EmailVerificationNotFoundError,
   EmailVerificationRequest,
   InternalUser,
-  User,
-  WeakPasswordError,
-  EmailAlreadyUsedError,
-  Session,
-  SessionFlags,
-  SessionValidationResult,
-  EmailVerificationNotFoundError,
-  EmailVerificationCodeExpiredError,
   InvalidEmailVerificationCodeError,
-  UserDoesNotExistError,
   InvalidPasswordError,
   PasswordResetSession,
+  User,
+  UserDoesNotExistError,
   UsernameAlreadyUsedError,
+  WeakPasswordError,
 } from './user.types.ts'
 import {
-  hashPassword,
-  generateRandomRecoveryCode,
-  verifyPasswordStrength,
   generateRandomOTP,
+  generateRandomRecoveryCode,
+  hashPassword,
   verifyPasswordHash,
+  verifyPasswordStrength,
 } from '../../auth/password.ts'
 import {encryptString} from '../../auth/encryption.ts'
 import {normalizeEmail} from '../../serde/email.ts'
 import {generateSessionToken} from '../../auth/session.ts'
 import {encodeBase32LowerCaseNoPadding, encodeHexLowerCase} from '@oslojs/encoding'
 import {sha256} from '@oslojs/crypto/sha2'
-import {subDays, addDays, addMinutes} from 'date-fns'
+import {addMinutes} from 'date-fns'
+import {SessionService} from './session.ts'
 
 export class UserService {
-  constructor(private readonly client: SqliteClient = new SqliteClient()) {}
+  constructor(
+    private readonly client: SqliteClient = new SqliteClient(),
+    private readonly sessionService: SessionService = new SessionService(client),
+  ) {}
 
   async createUser(input: {email: string; password: string; username: string; name: string}) {
     const {email: rawEmail, password} = input
@@ -78,7 +79,7 @@ export class UserService {
       sessionToken,
       stmt: createSessionStmt,
       stmtValue: createSession,
-    } = this.createSession(user.id, {twoFactorVerified: false})
+    } = this.sessionService.createSessionForTransaction(user.id, {twoFactorVerified: false})
 
     try {
       this.client.db.transaction(() => {
@@ -185,95 +186,6 @@ export class UserService {
     this.sendVerificationEmail(user.email, request.code)
   }
 
-  private createSession(userId: string, flags: SessionFlags) {
-    const token = generateSessionToken()
-    const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
-    const session: Session = {
-      id: sessionId,
-      userId,
-      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
-      twoFactorVerified: flags.twoFactorVerified,
-    }
-    const stmt = this.client.db.prepare(
-      'INSERT INTO session (id, user_id, expires_at, two_factor_verified) VALUES (:id, :userId, :expiresAt, :twoFactorVerified)',
-    )
-    const stmtValue = {
-      id: session.id,
-      userId: session.userId,
-      expiresAt: session.expiresAt,
-      twoFactorVerified: Number(session.twoFactorVerified),
-    }
-
-    return {session, sessionToken: token, stmt, stmtValue}
-  }
-
-  validateSessionToken(token: string): SessionValidationResult {
-    const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
-    using stmt = this.client.db.prepare(
-      `
-        SELECT 
-          session.id, session.user_id, session.expires_at, session.two_factor_verified, 
-          user.email, user.email_verified, user.name, user.username,
-          IIF(passkey_credential.id IS NOT NULL, 1, 0) as registered_passkey
-        FROM session
-        INNER JOIN user ON session.user_id = user.id
-        LEFT JOIN passkey_credential ON user.id = passkey_credential.user_id
-        WHERE session.id = :sessionId
-    `,
-    )
-    const res = stmt.get<{
-      id: string
-      user_id: string
-      expires_at: string
-      two_factor_verified: number
-      email: string
-      email_verified: number
-      name: string
-      username: string
-      registered_passkey: boolean
-    }>({sessionId})
-    if (!res) {
-      return {session: null, user: null}
-    }
-
-    const session: Session = {
-      id: res.id,
-      userId: res.user_id,
-      expiresAt: new Date(res.expires_at),
-      twoFactorVerified: Boolean(res.two_factor_verified),
-    }
-    const user: User = {
-      id: res.user_id,
-      email: res.email,
-      username: res.username,
-      name: res.name,
-      emailVerified: Boolean(res.email_verified),
-      registeredPasskey: Boolean(res.registered_passkey),
-    }
-    const now = new Date()
-    if (now >= new Date(session.expiresAt)) {
-      this.client.db.sql`DELETE FROM session WHERE id = ${session.id}`
-      return {session: null, user: null}
-    }
-    if (now >= subDays(new Date(session.expiresAt), 15)) {
-      // extend session
-      session.expiresAt = addDays(now, 30)
-      this.client.db.exec('UPDATE session SET expires_at = :expiration WHERE session.id = :sessionId', {
-        expiration: session.expiresAt,
-        sessionId,
-      })
-    }
-    return {session, user}
-  }
-
-  invalidateSession(sessionId: string) {
-    this.client.db.sql`DELETE FROM session WHERE id = ${sessionId}`
-  }
-
-  private invalidateUserSessions(userId: string): void {
-    this.client.db.sql`DELETE FROM session WHERE user_id = ${userId}`
-  }
-
   getUserByEmail(email: string): User {
     const stmt = this.client.db.prepare(
       `SELECT user.id, user.email, user.email_verified, user.username, user.name, IIF(passkey_credential.id IS NOT NULL, 1, 0)
@@ -317,8 +229,9 @@ export class UserService {
       throw new InvalidPasswordError()
     }
 
-    const {session, sessionToken, stmt, stmtValue} = this.createSession(user.id, {twoFactorVerified: false})
-    stmt.run(stmtValue)
+    const {session, sessionToken} = this.sessionService.createSession(user.id, {
+      twoFactorVerified: false,
+    })
 
     return {session, sessionToken}
   }
@@ -432,12 +345,13 @@ export class UserService {
     }
 
     this.invalidateUserPasswordResetSessions(userId)
-    this.invalidateUserSessions(userId)
+    this.sessionService.invalidateUserSessions(userId)
     const passwordHash = await hashPassword(newPassword)
     this.client.db.sql`UPDATE user SET password_hash = ${passwordHash} WHERE id = ${userId}`
 
-    const {session, sessionToken, stmt, stmtValue} = this.createSession(userId, {twoFactorVerified: false})
-    stmt.run(stmtValue)
+    const {session, sessionToken} = this.sessionService.createSession(userId, {
+      twoFactorVerified: false,
+    })
     return {session, sessionToken}
   }
 

@@ -25,10 +25,12 @@ import {ECDSAPublicKey, p256} from '@oslojs/crypto/ecdsa'
 import {RSAPublicKey} from '@oslojs/crypto/rsa'
 import {verifyWebAuthnChallenge} from '../../../../core/auth/webauthn.ts'
 import {TooMany2faCredentialsError, WebAuthnUserCredential} from '../../../../core/domain/user/passkey.types.ts'
-import {Session, User} from '../../../../core/domain/user/user.types.ts'
+import {User} from '../../../../core/domain/user/user.types.ts'
 import RegisterPasskeyButton from '../../../../islands/auth/register-passkey-button.tsx'
 import assert from 'node:assert'
 import {redirect} from '../../../../core/http/redirect.ts'
+import {Session} from '../../../../core/domain/user/session.types.ts'
+import {SessionService} from '../../../../core/domain/user/session.ts'
 
 export const handler: Handlers<PasskeysState, RouteState> = {
   GET(req, ctx) {
@@ -256,7 +258,8 @@ function addPasskey(formData: FormData, user: User, session: Session, ctx: Fresh
   }
 
   if (!session.twoFactorVerified) {
-    passkeyService.setSessionAs2FAVerified(session.id)
+    const sessionService = new SessionService()
+    sessionService.setSessionAs2FAVerified(session.id)
   }
 
   return redirect('/2fa/passkey', 303)

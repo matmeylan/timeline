@@ -1,20 +1,21 @@
 import {SqliteClient} from '../../database/sqlite.ts'
 import {
   CredentialNotFoundError,
+  InvalidCredentialError,
   TooMany2faCredentialsError,
   WebAuthnUserCredential,
-  InvalidCredentialError,
 } from './passkey.types.ts'
 import {decodePKIXECDSASignature, decodeSEC1PublicKey, p256, verifyECDSASignature} from '@oslojs/crypto/ecdsa'
 import {decodePKCS1RSAPublicKey, sha256ObjectIdentifier, verifyRSASSAPKCS1v15Signature} from '@oslojs/crypto/rsa'
 import {sha256} from '@oslojs/crypto/sha2'
-import {coseAlgorithmES256, createAssertionSignatureMessage, coseAlgorithmRS256} from '@oslojs/webauthn'
-import {Session, SessionFlags} from './user.types.ts'
-import {generateSessionToken} from '../../auth/session.ts'
-import {encodeHexLowerCase} from '@oslojs/encoding'
+import {coseAlgorithmES256, coseAlgorithmRS256, createAssertionSignatureMessage} from '@oslojs/webauthn'
+import {SessionService} from './session.ts'
 
 export class PasskeyService {
-  constructor(private readonly client: SqliteClient = new SqliteClient()) {}
+  constructor(
+    private readonly client: SqliteClient = new SqliteClient(),
+    private readonly sessionService: SessionService = new SessionService(client),
+  ) {}
 
   createPasskeyCredential(credential: WebAuthnUserCredential): void {
     const limit = 5
@@ -111,42 +112,14 @@ export class PasskeyService {
       throw new InvalidCredentialError(credentialId)
     }
 
-    const {session, sessionToken, stmt, stmtValue} = this.createSession(credential.userId, {
+    const {session, sessionToken} = this.sessionService.createSession(credential.userId, {
       twoFactorVerified: false,
     })
-    stmt.run(stmtValue)
 
     return {session, sessionToken}
   }
 
   deletePasskeyCredential(userId: string, credentialId: Uint8Array): void {
     this.client.db.sql`DELETE FROM passkey_credential WHERE id = ${credentialId} AND user_id = ${userId}`
-  }
-
-  // TODO: factor
-  private createSession(userId: string, flags: SessionFlags) {
-    const token = generateSessionToken()
-    const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
-    const session: Session = {
-      id: sessionId,
-      userId,
-      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
-      twoFactorVerified: flags.twoFactorVerified,
-    }
-    const stmt = this.client.db.prepare(
-      'INSERT INTO session (id, user_id, expires_at, two_factor_verified) VALUES (:id, :userId, :expiresAt, :twoFactorVerified)',
-    )
-    const stmtValue = {
-      id: session.id,
-      userId: session.userId,
-      expiresAt: session.expiresAt,
-      twoFactorVerified: Number(session.twoFactorVerified),
-    }
-
-    return {session, sessionToken: token, stmt, stmtValue}
-  }
-
-  setSessionAs2FAVerified(sessionId: string): void {
-    this.client.db.sql`UPDATE session SET two_factor_verified = 1 WHERE id = ${sessionId}`
   }
 }
