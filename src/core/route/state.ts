@@ -1,4 +1,4 @@
-import {Session, User} from '../domain/user.types.ts'
+import {Session, User} from '../domain/user/user.types.ts'
 
 export interface RouteState {
   user?: User | null

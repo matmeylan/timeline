@@ -1,4 +1,4 @@
-import {SqliteClient, isUniqueConstraintErrorForField} from '../database/sqlite.ts'
+import {SqliteClient, isUniqueConstraintErrorForField} from '../../database/sqlite.ts'
 import {
   EmailVerificationRequest,
   InternalUser,
@@ -22,10 +22,10 @@ import {
   verifyPasswordStrength,
   generateRandomOTP,
   verifyPasswordHash,
-} from '../auth/password.ts'
-import {encryptString} from '../auth/encryption.ts'
-import {normalizeEmail} from '../serde/email.ts'
-import {generateSessionToken} from '../auth/session.ts'
+} from '../../auth/password.ts'
+import {encryptString} from '../../auth/encryption.ts'
+import {normalizeEmail} from '../../serde/email.ts'
+import {generateSessionToken} from '../../auth/session.ts'
 import {encodeBase32LowerCaseNoPadding, encodeHexLowerCase} from '@oslojs/encoding'
 import {sha256} from '@oslojs/crypto/sha2'
 import {subDays, addDays, addMinutes} from 'date-fns'

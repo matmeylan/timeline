@@ -5,7 +5,7 @@ import {
   hasSessionTokenSetInResponse,
   setSessionTokenCookie,
 } from '../core/auth/session.ts'
-import {UserService} from '../core/domain/user.ts'
+import {UserService} from '../core/domain/user/user.ts'
 import {RouteState} from '../core/route/state.ts'
 
 export async function handler(req: Request, ctx: FreshContext<RouteState>) {

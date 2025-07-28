@@ -2,9 +2,9 @@ import {Handlers} from '$fresh/server.ts'
 import {RefillingTokenBucket} from '../../../../core/auth/rate-limit.ts'
 import {createWebAuthnChallenge, generateRandomCredentialsId} from '../../../../core/auth/webauthn.ts'
 import {encodeBase64} from '@oslojs/encoding'
-import {User2FAService} from '../../../../core/domain/user-2fa.ts'
+import {PasskeyService} from '../../../../core/domain/user/passkey.ts'
 import {getSessionTokenCookie} from '../../../../core/auth/session.ts'
-import {UserService} from '../../../../core/domain/user.ts'
+import {UserService} from '../../../../core/domain/user/user.ts'
 
 const rateLimitBucket = new RefillingTokenBucket<string>(30, 10)
 
@@ -27,8 +27,8 @@ export const handler: Handlers = {
       return new Response('Forbidden', {status: 403})
     }
 
-    const user2FAService = new User2FAService()
-    const credentials = user2FAService.getUserPasskeyCredentials(user.id)
+    const passkeyService = new PasskeyService()
+    const credentials = passkeyService.getUserPasskeyCredentials(user.id)
     const credentialUserId = generateRandomCredentialsId()
     const challenge = createWebAuthnChallenge()
 

@@ -6,13 +6,13 @@ import {
   setEmailVerificationRequestCookie,
 } from '../../../core/auth/email-verification.ts'
 import {ExpiringTokenBucket} from '../../../core/auth/rate-limit.ts'
-import {UserService} from '../../../core/domain/user.ts'
+import {UserService} from '../../../core/domain/user/user.ts'
 import {RouteState} from '../../../core/route/state.ts'
 import {
   EmailVerificationCodeExpiredError,
   EmailVerificationNotFoundError,
   InvalidEmailVerificationCodeError,
-} from '../../../core/domain/user.types.ts'
+} from '../../../core/domain/user/user.types.ts'
 import assert from 'node:assert'
 import {redirect} from '../../../core/http/redirect.ts'
 

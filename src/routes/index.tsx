@@ -1,6 +1,6 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
 import {Container} from '../components/Container.tsx'
-import {User} from '../core/domain/user.types.ts'
+import {User} from '../core/domain/user/user.types.ts'
 import {RouteState} from '../core/route/state.ts'
 
 export const handler: Handlers<HomeState, RouteState> = {

@@ -2,7 +2,7 @@ import {FreshContext, Handlers, PageProps} from '$fresh/server.ts'
 import {encodeBase64} from '@oslojs/encoding'
 import {Container} from '../../../../components/Container.tsx'
 import {RouteState} from '../../../../core/route/state.ts'
-import {User2FAService} from '../../../../core/domain/user-2fa.ts'
+import {PasskeyService} from '../../../../core/domain/user/passkey.ts'
 import {formatDate} from '../../../../core/date/format-date.ts'
 import {decodeBase64} from '@oslojs/encoding'
 import type {
@@ -24,8 +24,8 @@ import {
 import {ECDSAPublicKey, p256} from '@oslojs/crypto/ecdsa'
 import {RSAPublicKey} from '@oslojs/crypto/rsa'
 import {verifyWebAuthnChallenge} from '../../../../core/auth/webauthn.ts'
-import {TooMany2faCredentialsError, WebAuthnUserCredential} from '../../../../core/domain/user-2fa.types.ts'
-import {Session, User} from '../../../../core/domain/user.types.ts'
+import {TooMany2faCredentialsError, WebAuthnUserCredential} from '../../../../core/domain/user/passkey.types.ts'
+import {Session, User} from '../../../../core/domain/user/user.types.ts'
 import RegisterPasskeyButton from '../../../../islands/auth/register-passkey-button.tsx'
 import assert from 'node:assert'
 import {redirect} from '../../../../core/http/redirect.ts'
@@ -39,8 +39,8 @@ export const handler: Handlers<PasskeysState, RouteState> = {
       return redirect('/verify-email', 303)
     }
 
-    const user2FAService = new User2FAService()
-    const passkeys = user2FAService.getUserPasskeyCredentials(user.id)
+    const passkeyService = new PasskeyService()
+    const passkeys = passkeyService.getUserPasskeyCredentials(user.id)
 
     return ctx.render({passkeys: passkeys.map(toPasskeyState)})
   },
@@ -115,11 +115,11 @@ function deletePasskey(formData: FormData, user: User, ctx: FreshContext<RouteSt
     throw new Error('Missing credential ID')
   }
 
-  const user2FAService = new User2FAService()
+  const passkeyService = new PasskeyService()
   const credentialId = decodeBase64(encodedCredentialId)
-  user2FAService.deletePasskeyCredential(user.id, credentialId)
+  passkeyService.deletePasskeyCredential(user.id, credentialId)
 
-  const passkeys = user2FAService.getUserPasskeyCredentials(user.id)
+  const passkeys = passkeyService.getUserPasskeyCredentials(user.id)
   return ctx.render({passkeys: passkeys.map(toPasskeyState)})
 }
 
@@ -128,8 +128,8 @@ function addPasskey(formData: FormData, user: User, session: Session, ctx: Fresh
   const encodedClientDataJSON = formData.get('clientDataJson')
   const name = new Date().toISOString() // name is the date when it was generated ?
 
-  const user2FAService = new User2FAService()
-  const passkeys = user2FAService.getUserPasskeyCredentials(user.id)
+  const passkeyService = new PasskeyService()
+  const passkeys = passkeyService.getUserPasskeyCredentials(user.id)
 
   if (
     typeof name !== 'string' ||
@@ -246,7 +246,7 @@ function addPasskey(formData: FormData, user: User, session: Session, ctx: Fresh
   }
 
   try {
-    user2FAService.createPasskeyCredential(credential)
+    passkeyService.createPasskeyCredential(credential)
   } catch (e) {
     if (e instanceof TooMany2faCredentialsError) {
       const error = 'Invalid data. Please try again'
@@ -256,7 +256,7 @@ function addPasskey(formData: FormData, user: User, session: Session, ctx: Fresh
   }
 
   if (!session.twoFactorVerified) {
-    user2FAService.setSessionAs2FAVerified(session.id)
+    passkeyService.setSessionAs2FAVerified(session.id)
   }
 
   return redirect('/2fa/passkey', 303)

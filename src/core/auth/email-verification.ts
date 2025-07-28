@@ -1,4 +1,4 @@
-import {EmailVerificationRequest} from '../domain/user.types.ts'
+import {EmailVerificationRequest} from '../domain/user/user.types.ts'
 import {getCookies, setCookie, deleteCookie} from '@std/http'
 
 const EMAIL_VERIFICATION_COOKIE_NAME = 'email_verification'

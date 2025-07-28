@@ -1,20 +1,39 @@
-import {SqliteClient} from '../database/sqlite.ts'
+import {SqliteClient} from '../../database/sqlite.ts'
 import {
   CredentialNotFoundError,
   TooMany2faCredentialsError,
   WebAuthnUserCredential,
   InvalidCredentialError,
-} from './user-2fa.types.ts'
+} from './passkey.types.ts'
 import {decodePKIXECDSASignature, decodeSEC1PublicKey, p256, verifyECDSASignature} from '@oslojs/crypto/ecdsa'
 import {decodePKCS1RSAPublicKey, sha256ObjectIdentifier, verifyRSASSAPKCS1v15Signature} from '@oslojs/crypto/rsa'
 import {sha256} from '@oslojs/crypto/sha2'
 import {coseAlgorithmES256, createAssertionSignatureMessage, coseAlgorithmRS256} from '@oslojs/webauthn'
 import {Session, SessionFlags} from './user.types.ts'
-import {generateSessionToken} from '../auth/session.ts'
+import {generateSessionToken} from '../../auth/session.ts'
 import {encodeHexLowerCase} from '@oslojs/encoding'
 
-export class User2FAService {
+export class PasskeyService {
   constructor(private readonly client: SqliteClient = new SqliteClient()) {}
+
+  createPasskeyCredential(credential: WebAuthnUserCredential): void {
+    const limit = 5
+    const credentials = this.getUserPasskeyCredentials(credential.userId)
+    if (credentials.length >= limit) {
+      throw new TooMany2faCredentialsError(limit)
+    }
+
+    using stmt = this.client.db.prepare(
+      'INSERT INTO passkey_credential (id, user_id, name, algorithm, public_key) VALUES (:id, :userId, :name, :algorithm, :publicKey)',
+    )
+    stmt.run({
+      id: credential.id,
+      userId: credential.userId,
+      name: credential.name,
+      algorithm: credential.algorithmId,
+      publicKey: credential.publicKey,
+    })
+  }
 
   getUserPasskeyCredentials(userId: string): WebAuthnUserCredential[] {
     using stmt = this.client.db.prepare(
@@ -100,6 +119,10 @@ export class User2FAService {
     return {session, sessionToken}
   }
 
+  deletePasskeyCredential(userId: string, credentialId: Uint8Array): void {
+    this.client.db.sql`DELETE FROM passkey_credential WHERE id = ${credentialId} AND user_id = ${userId}`
+  }
+
   // TODO: factor
   private createSession(userId: string, flags: SessionFlags) {
     const token = generateSessionToken()
@@ -123,30 +146,7 @@ export class User2FAService {
     return {session, sessionToken: token, stmt, stmtValue}
   }
 
-  createPasskeyCredential(credential: WebAuthnUserCredential): void {
-    const limit = 5
-    const credentials = this.getUserPasskeyCredentials(credential.userId)
-    if (credentials.length >= limit) {
-      throw new TooMany2faCredentialsError(limit)
-    }
-
-    using stmt = this.client.db.prepare(
-      'INSERT INTO passkey_credential (id, user_id, name, algorithm, public_key) VALUES (:id, :userId, :name, :algorithm, :publicKey)',
-    )
-    stmt.run({
-      id: credential.id,
-      userId: credential.userId,
-      name: credential.name,
-      algorithm: credential.algorithmId,
-      publicKey: credential.publicKey,
-    })
-  }
-
   setSessionAs2FAVerified(sessionId: string): void {
     this.client.db.sql`UPDATE session SET two_factor_verified = 1 WHERE id = ${sessionId}`
-  }
-
-  deletePasskeyCredential(userId: string, credentialId: Uint8Array): void {
-    this.client.db.sql`DELETE FROM passkey_credential WHERE id = ${credentialId} AND user_id = ${userId}`
   }
 }

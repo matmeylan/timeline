@@ -5,9 +5,9 @@ import {decodeBase64} from '@oslojs/encoding'
 import type {ClientData, AuthenticatorData} from '@oslojs/webauthn'
 import {parseClientDataJSON, ClientDataType, parseAuthenticatorData} from '@oslojs/webauthn'
 import {verifyWebAuthnChallenge} from '../../../../core/auth/webauthn.ts'
-import {User2FAService} from '../../../../core/domain/user-2fa.ts'
+import {PasskeyService} from '../../../../core/domain/user/passkey.ts'
 import {setSessionTokenCookie} from '../../../../core/auth/session.ts'
-import {CredentialNotFoundError, InvalidCredentialError} from '../../../../core/domain/user-2fa.types.ts'
+import {CredentialNotFoundError, InvalidCredentialError} from '../../../../core/domain/user/passkey.types.ts'
 
 // Stricter rate limiting can be omitted here since creating challenges are rate-limited
 
@@ -87,9 +87,9 @@ export const handler: Handlers<void, RouteState> = {
       })
     }
 
-    const user2FAService = new User2FAService()
+    const passkeyService = new PasskeyService()
     try {
-      const {session, sessionToken} = user2FAService.validateUserCredential({
+      const {session, sessionToken} = passkeyService.validateUserCredential({
         authenticatorDataBytes,
         clientDataJSON,
         credentialId,

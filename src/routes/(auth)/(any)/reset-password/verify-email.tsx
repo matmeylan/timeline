@@ -6,7 +6,7 @@ import {
   deletePasswordResetSessionTokenCookie,
   getPasswordResetSessionTokenCookie,
 } from '../../../../core/auth/password.ts'
-import {UserService} from '../../../../core/domain/user.ts'
+import {UserService} from '../../../../core/domain/user/user.ts'
 import {redirect} from '../../../../core/http/redirect.ts'
 
 const bucket = new ExpiringTokenBucket<string>(5, 60 * 30)
