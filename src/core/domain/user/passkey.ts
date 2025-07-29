@@ -37,12 +37,21 @@ import {
 } from '@oslojs/webauthn'
 import {SessionService} from './session.ts'
 import {createWebAuthnChallenge, generateRandomCredentialsId} from '../../auth/webauthn.ts'
+import assert from 'node:assert'
 
 export class PasskeyService {
+  private readonly origin: string
+  private readonly host: string
+
   constructor(
     private readonly client: SqliteClient = new SqliteClient(),
     private readonly sessionService: SessionService = new SessionService(client),
-  ) {}
+  ) {
+    const origin = Deno.env.get('ORIGIN')
+    assert(origin, 'env ORIGIN was not set')
+    this.origin = origin
+    this.host = new URL(origin).hostname
+  }
 
   createPasskeyChallenge() {
     const challenge = createWebAuthnChallenge()
@@ -73,8 +82,7 @@ export class PasskeyService {
       if (attestationStatement.format !== AttestationStatementFormat.None) {
         throw new Error('Invalid attestation format')
       }
-      // TODO: Update host
-      if (!authenticatorData.verifyRelyingPartyIdHash('localhost')) {
+      if (!authenticatorData.verifyRelyingPartyIdHash(this.host)) {
         throw new Error('Invalid host')
       }
       if (!authenticatorData.userPresent || !authenticatorData.userVerified) {
@@ -92,8 +100,7 @@ export class PasskeyService {
       if (!this.verifyWebAuthnChallenge(clientData.challenge)) {
         throw new Error('Invalid challenge: challenge not found')
       }
-      // TODO: Update origin
-      if (clientData.origin !== 'http://localhost:8000') {
+      if (clientData.origin !== this.origin) {
         throw new Error('Invalid client data origin')
       }
       if (clientData.crossOrigin !== null && clientData.crossOrigin) {
@@ -174,8 +181,7 @@ export class PasskeyService {
     try {
       authenticatorData = parseAuthenticatorData(data.authenticatorData)
 
-      // TODO: Update host
-      if (!authenticatorData.verifyRelyingPartyIdHash('localhost')) {
+      if (!authenticatorData.verifyRelyingPartyIdHash(this.host)) {
         throw new Error('Invalid host')
       }
       if (!authenticatorData.userPresent || !authenticatorData.userVerified) {
@@ -190,8 +196,7 @@ export class PasskeyService {
       if (!this.verifyWebAuthnChallenge(clientData.challenge)) {
         throw new Error('Invalid challenge: challenge not found')
       }
-      // TODO: Update origin
-      if (clientData.origin !== 'http://localhost:8000') {
+      if (clientData.origin !== this.origin) {
         throw new Error('Invalid client origin')
       }
       if (clientData.crossOrigin !== null && clientData.crossOrigin) {
