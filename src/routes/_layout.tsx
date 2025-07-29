@@ -1,7 +1,9 @@
 import {PageProps} from '$fresh/server.ts'
 import {Header} from '../components/Header.tsx'
+import type {User} from '../core/domain/user/user.types.ts'
 
-export default function Layout({Component}: PageProps) {
+export default function Layout({Component, state}: PageProps) {
+  const user = state.user as User | undefined
   return (
     <>
       <div class="fixed inset-0 flex justify-center sm:px-8">
@@ -10,7 +12,7 @@ export default function Layout({Component}: PageProps) {
         </div>
       </div>
       <div class="relative flex w-full flex-col">
-        <Header />
+        <Header user={user} />
         <main class="flex-auto">
           <Component />
         </main>

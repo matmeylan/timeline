@@ -1,12 +1,13 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
 import {z, ZodError} from '@zod/zod'
-import {JournalService} from '../core/domain/journal.ts'
-import {SlugAlreadyUsed} from '../core/domain/journal.types.ts'
-import {Container} from '../components/Container.tsx'
-import {RouteState} from '../core/route/state.ts'
-import {redirect} from '../core/http/redirect.ts'
+import {JournalService} from '../../core/domain/journal.ts'
+import {SlugAlreadyUsedError, SlugReservedError} from '../../core/domain/journal.types.ts'
+import {Container} from '../../components/Container.tsx'
+import {AuthenticatedRouteState} from '../../core/route/state.ts'
+import {redirect} from '../../core/http/redirect.ts'
+import {journal as journalRoute} from '../../core/route/routes.ts'
 
-export const handler: Handlers<CreateJournalState, RouteState> = {
+export const handler: Handlers<CreateJournalState, AuthenticatedRouteState> = {
   async POST(req, ctx) {
     const formData = await req.formData()
 
@@ -24,10 +25,10 @@ export const handler: Handlers<CreateJournalState, RouteState> = {
 
     const service = new JournalService()
     try {
-      const journal = service.startJournal(result.data)
-      return redirect(`/${journal.slug}`, 303)
+      const journal = service.startJournal(result.data, ctx.state.user)
+      return redirect(journalRoute(ctx.state.user.username, journal.slug), 303)
     } catch (err) {
-      if (err instanceof SlugAlreadyUsed) {
+      if (err instanceof SlugAlreadyUsedError || err instanceof SlugReservedError) {
         return ctx.render(
           {
             error: err.toZod(),
@@ -45,7 +46,7 @@ export const handler: Handlers<CreateJournalState, RouteState> = {
   },
 }
 
-export default function CreateJournal(props: PageProps<CreateJournalState>) {
+export default function StartJournalPage(props: PageProps<CreateJournalState>) {
   const {error, form} = props.data || {}
   const errors = error ? z.flattenError(error) : undefined
   const slugHint = "When left empty, we'll generate a slug for you"

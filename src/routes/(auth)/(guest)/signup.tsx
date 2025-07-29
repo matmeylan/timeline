@@ -8,6 +8,7 @@ import {setSessionTokenCookie} from '../../../core/auth/session.ts'
 import {EMAIL_VALIDATION_PATTERN} from '../../../core/serde/email.ts'
 import {
   EmailAlreadyUsedError,
+  ReservedUsername,
   UsernameAlreadyUsedError,
   WeakPasswordError,
 } from '../../../core/domain/user/user.types.ts'
@@ -61,7 +62,8 @@ export const handler: Handlers<SignupState, RouteState> = {
       if (
         err instanceof EmailAlreadyUsedError ||
         err instanceof WeakPasswordError ||
-        err instanceof UsernameAlreadyUsedError
+        err instanceof UsernameAlreadyUsedError ||
+        err instanceof ReservedUsername
       ) {
         return ctx.render({error: err.toZod(), form}, {status: 400})
       }

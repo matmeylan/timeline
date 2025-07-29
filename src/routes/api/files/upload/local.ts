@@ -3,6 +3,7 @@ import {join} from '@std/path'
 import {z} from '@zod/zod'
 import {FileUploadRequest, MAX_UPLOAD_SIZE} from '../../../../core/domain/file.types.ts'
 import {FileService} from '../../../../core/domain/file.ts'
+import type {User} from '../../../../core/domain/user/user.types.ts'
 
 export const handler: Handlers = {
   async PUT(req, ctx) {
@@ -46,9 +47,9 @@ export class LocalFileStorage {
     this.rootDir = rootDir
   }
 
-  generateUploadSignedUrl(request: FileUploadRequest) {
+  generateUploadSignedUrl(request: FileUploadRequest, user: User) {
     const {fileName, size, contentType, prefix} = request
-    const namespace = 'user' // TODO: should be user specific
+    const namespace = `user/${user.username}`
     const uniqueFolder = crypto.randomUUID() // allows to keep filenames unique
     const fileKey = join(namespace, prefix || '', uniqueFolder, fileName)
 

@@ -8,9 +8,11 @@ export class BaseSchema1724535457 implements Migration {
         create table journal
         (
             id         TEXT PRIMARY KEY,
-            slug       TEXT UNIQUE NOT NULL,
-            title      TEXT        NOT NULL,
-            createdAt  TEXT        NOT NULL
+            slug       TEXT NOT NULL,
+            title      TEXT NOT NULL,
+            createdAt  TEXT NOT NULL,
+            ownerId    TEXT NOT NULL,
+            UNIQUE (slug, ownerId)
         );
   `)
   }

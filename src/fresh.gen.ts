@@ -11,12 +11,15 @@ import * as $_auth_authenticated_logout from "./routes/(auth)/(authenticated)/lo
 import * as $_auth_authenticated_verify_email_resend from "./routes/(auth)/(authenticated)/verify-email-resend.ts";
 import * as $_auth_authenticated_verify_email from "./routes/(auth)/(authenticated)/verify-email.tsx";
 import * as $_auth_guest_middleware from "./routes/(auth)/(guest)/_middleware.ts";
-import * as $_auth_guest_login_index from "./routes/(auth)/(guest)/login/index.tsx";
+import * as $_auth_guest_login from "./routes/(auth)/(guest)/login.tsx";
 import * as $_auth_guest_login_passkey from "./routes/(auth)/(guest)/login/passkey.ts";
 import * as $_auth_guest_signup from "./routes/(auth)/(guest)/signup.tsx";
-import * as $_slug_ from "./routes/[slug].tsx";
-import * as $_slug_edit_entryId_ from "./routes/[slug]/edit/[entryId].tsx";
-import * as $_slug_write from "./routes/[slug]/write.tsx";
+import * as $_user_slug_ from "./routes/[user]/[slug].tsx";
+import * as $_user_slug_edit_entry_ from "./routes/[user]/[slug]/edit/[entry].tsx";
+import * as $_user_slug_write from "./routes/[user]/[slug]/write.tsx";
+import * as $_user_middleware from "./routes/[user]/_middleware.ts";
+import * as $_user_index from "./routes/[user]/index.tsx";
+import * as $_user_start from "./routes/[user]/start.tsx";
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $_layout from "./routes/_layout.tsx";
@@ -27,8 +30,6 @@ import * as $api_files_upload_local from "./routes/api/files/upload/local.ts";
 import * as $api_webauthn_challenge_login from "./routes/api/webauthn/challenge/login.ts";
 import * as $api_webauthn_challenge_register from "./routes/api/webauthn/challenge/register.ts";
 import * as $index from "./routes/index.tsx";
-import * as $journals from "./routes/journals.tsx";
-import * as $start from "./routes/start.tsx";
 import * as $auth_login_with_passkey_button from "./islands/auth/login-with-passkey-button.tsx";
 import * as $auth_register_passkey_button from "./islands/auth/register-passkey-button.tsx";
 import * as $content_editor_content_editor from "./islands/content-editor/content-editor.tsx";
@@ -51,12 +52,15 @@ const manifest = {
     "./routes/(auth)/(authenticated)/verify-email.tsx":
       $_auth_authenticated_verify_email,
     "./routes/(auth)/(guest)/_middleware.ts": $_auth_guest_middleware,
-    "./routes/(auth)/(guest)/login/index.tsx": $_auth_guest_login_index,
+    "./routes/(auth)/(guest)/login.tsx": $_auth_guest_login,
     "./routes/(auth)/(guest)/login/passkey.ts": $_auth_guest_login_passkey,
     "./routes/(auth)/(guest)/signup.tsx": $_auth_guest_signup,
-    "./routes/[slug].tsx": $_slug_,
-    "./routes/[slug]/edit/[entryId].tsx": $_slug_edit_entryId_,
-    "./routes/[slug]/write.tsx": $_slug_write,
+    "./routes/[user]/[slug].tsx": $_user_slug_,
+    "./routes/[user]/[slug]/edit/[entry].tsx": $_user_slug_edit_entry_,
+    "./routes/[user]/[slug]/write.tsx": $_user_slug_write,
+    "./routes/[user]/_middleware.ts": $_user_middleware,
+    "./routes/[user]/index.tsx": $_user_index,
+    "./routes/[user]/start.tsx": $_user_start,
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
     "./routes/_layout.tsx": $_layout,
@@ -68,8 +72,6 @@ const manifest = {
     "./routes/api/webauthn/challenge/register.ts":
       $api_webauthn_challenge_register,
     "./routes/index.tsx": $index,
-    "./routes/journals.tsx": $journals,
-    "./routes/start.tsx": $start,
   },
   islands: {
     "./islands/auth/login-with-passkey-button.tsx":

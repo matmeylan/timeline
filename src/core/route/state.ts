@@ -5,3 +5,8 @@ export interface RouteState {
   user?: User | null
   session?: Session | null
 }
+
+export interface AuthenticatedRouteState {
+  user: User
+  session: Session
+}

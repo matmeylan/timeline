@@ -9,7 +9,6 @@ export class JournalEntry1725039061 implements Migration {
         create table journal_entry
         (
             id          TEXT PRIMARY KEY,
-            title       TEXT NOT NULL,
             createdAt   TEXT NOT NULL,
             content     TEXT NOT NULL,
             contentType TEXT NOT NULL,

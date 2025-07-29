@@ -1,9 +1,22 @@
 import {z} from '@zod/zod'
 import {Handlers} from '$fresh/server.ts'
 import {FileService} from '../../../../core/domain/file.ts'
+import {getSessionTokenCookie} from '../../../../core/auth/session.ts'
+import {SessionService} from '../../../../core/domain/user/session.ts'
 
 export const handler: Handlers = {
   async POST(req, ctx) {
+    const token = getSessionTokenCookie(req.headers)
+    if (!token) {
+      return new Response('Unauthenticated', {status: 401})
+    }
+
+    const sessionService = new SessionService()
+    const {user} = sessionService.validateSessionToken(token)
+    if (!user) {
+      return new Response('Forbidden', {status: 403})
+    }
+
     const body = await req.json()
     const res = GenerateUploadSignedUrlRequest.safeParse(body)
     if (!res.success) {
@@ -14,12 +27,15 @@ export const handler: Handlers = {
     const fileService = new FileService()
     return Response.json(
       {
-        uploadUrl: fileService.generateUploadSignedUrl({
-          fileName,
-          size,
-          contentType,
-          prefix,
-        }),
+        uploadUrl: fileService.generateUploadSignedUrl(
+          {
+            fileName,
+            size,
+            contentType,
+            prefix,
+          },
+          user,
+        ),
       },
       {status: 200},
     )

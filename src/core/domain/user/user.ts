@@ -8,6 +8,7 @@ import {
   InvalidEmailVerificationCodeError,
   InvalidPasswordError,
   PasswordResetSession,
+  ReservedUsername,
   User,
   UserDoesNotExistError,
   UsernameAlreadyUsedError,
@@ -28,8 +29,11 @@ import {sha256} from '@oslojs/crypto/sha2'
 import {addMinutes} from 'date-fns'
 import {SessionService} from './session.ts'
 import {EmailService} from '../../email/email.ts'
+import {RESERVED_ROUTES_AT_ROOT} from '../../route/routes.ts'
 
 export class UserService {
+  private readonly reservedUsernames = RESERVED_ROUTES_AT_ROOT()
+
   constructor(
     private readonly client: SqliteClient = new SqliteClient(),
     private readonly sessionService: SessionService = new SessionService(client),
@@ -38,6 +42,12 @@ export class UserService {
 
   async createUser(input: {email: string; password: string; username: string; name: string}) {
     const {email: rawEmail, password} = input
+
+    const username = input.username.trim()
+    if (this.reservedUsernames.includes(username)) {
+      throw new ReservedUsername(username)
+    }
+
     const strongPassword = verifyPasswordStrength(password)
     if (!strongPassword) {
       throw new WeakPasswordError()
@@ -50,7 +60,7 @@ export class UserService {
     const user: InternalUser = {
       id: crypto.randomUUID(),
       email,
-      username: input.username.trim(),
+      username,
       name: input.name.trim(),
       passwordHash,
       recoveryCode: encryptedRecoveryCode,

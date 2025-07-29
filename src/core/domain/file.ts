@@ -1,6 +1,7 @@
 import {SqliteClient} from '../database/sqlite.ts'
 import {LocalFileStorage} from '../../routes/api/files/upload/local.ts'
 import {File, FileUpload, FileUploadRequest} from './file.types.ts'
+import type {User} from './user/user.types.ts'
 
 export class FileService {
   constructor(
@@ -8,8 +9,8 @@ export class FileService {
     private readonly storage: LocalFileStorage = new LocalFileStorage(),
   ) {}
 
-  generateUploadSignedUrl(request: FileUploadRequest) {
-    return this.storage.generateUploadSignedUrl(request)
+  generateUploadSignedUrl(request: FileUploadRequest, user: User) {
+    return this.storage.generateUploadSignedUrl(request, user)
   }
 
   async uploadFile(request: FileUpload) {

@@ -1,7 +1,7 @@
 import {ZodError} from '@zod/zod'
 import {Model} from '../database/model.types.ts'
 import {Zodable} from '../serde/zod.ts'
-import {CreateJournalInput} from '../../routes/start.tsx'
+import {CreateJournalInput} from '../../routes/[user]/start.tsx'
 
 export interface StartJournal {
   title: string
@@ -13,6 +13,7 @@ export interface Journal extends Model {
   slug: string
   title: string
   createdAt: Date | string // ISO-8601
+  ownerId: string
 }
 
 export interface WriteJournalEntry {
@@ -33,9 +34,21 @@ export interface EditJournalEntry {
   contentType: string
 }
 
-export class SlugAlreadyUsed extends Error implements Zodable<CreateJournalInput> {
+export class SlugReservedError extends Error implements Zodable<CreateJournalInput> {
   constructor(readonly slug: string) {
-    super(`Slug "${slug}" is already used`)
+    super(`Slug "${slug}" is reserved. Please use another  slug`)
+  }
+
+  toZod() {
+    return new ZodError([
+      {input: this.slug, code: 'custom', path: ['slug'], message: this.message},
+    ]) as ZodError<CreateJournalInput>
+  }
+}
+
+export class SlugAlreadyUsedError extends Error implements Zodable<CreateJournalInput> {
+  constructor(readonly slug: string) {
+    super(`You already have a journal named "${slug}"`)
   }
 
   toZod() {

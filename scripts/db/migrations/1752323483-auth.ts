@@ -48,6 +48,10 @@ export class Auth1752323483 implements Migration {
           algorithm INTEGER NOT NULL,
           public_key BLOB NOT NULL
       );
+
+      CREATE TABLE passkey_challenge (
+        challenge BLOB PRIMARY KEY
+      );
     `)
   }
 }

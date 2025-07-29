@@ -3,24 +3,25 @@ import {
   Journal,
   JournalEntry,
   NotFoundError,
-  SlugAlreadyUsed,
+  SlugAlreadyUsedError,
   StartJournal,
   WriteJournalEntry,
   EditJournalEntry,
+  SlugReservedError,
 } from './journal.types.ts'
 import {isUniqueConstraintError, SqliteClient} from '../database/sqlite.ts'
-
-// reserved slugs at the same URL path level
-// TODO: user prefixed journals
-const reservedSlugs = ['start', 'journals', '2fa', 'login', 'reset-password', 'signout', 'signup']
+import type {User} from './user/user.types.ts'
+import {RESERVED_SLUGS_AT_USER} from '../route/routes.ts'
 
 export class JournalService {
+  private readonly reservedSlugs = RESERVED_SLUGS_AT_USER()
+
   constructor(private readonly client: SqliteClient = new SqliteClient()) {}
 
-  startJournal(input: StartJournal): Journal {
+  startJournal(input: StartJournal, user: User): Journal {
     const slug = generateSlug(input.slug || input.title)
-    if (reservedSlugs.includes(slug)) {
-      throw new SlugAlreadyUsed(slug)
+    if (this.reservedSlugs.includes(slug)) {
+      throw new SlugReservedError(slug)
     }
 
     const journal: Journal = {
@@ -28,18 +29,19 @@ export class JournalService {
       slug,
       title: input.title,
       createdAt: new Date(),
+      ownerId: user.id,
     }
 
     const stmt = this.client.db.prepare(
-      `INSERT INTO journal(id, slug, title, createdAt)
-       values (:id, :slug, :title, :createdAt)`,
+      `INSERT INTO journal(id, slug, title, createdAt, ownerId)
+       VALUES (:id, :slug, :title, :createdAt, :ownerId)`,
     )
 
     try {
       stmt.run(journal)
     } catch (err) {
       if (isUniqueConstraintError(err)) {
-        throw new SlugAlreadyUsed(slug)
+        throw new SlugAlreadyUsedError(slug)
       }
       throw err
     }

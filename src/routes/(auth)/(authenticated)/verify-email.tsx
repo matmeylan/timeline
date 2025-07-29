@@ -15,7 +15,7 @@ import {
 } from '../../../core/domain/user/user.types.ts'
 import assert from 'node:assert'
 import {redirect} from '../../../core/http/redirect.ts'
-import {home, verifyEmailResend} from '../../../core/route/routes.ts'
+import {home, startJournal, verifyEmailResend} from '../../../core/route/routes.ts'
 
 const bucket = new ExpiringTokenBucket<string>(5, 60 * 30)
 
@@ -91,7 +91,7 @@ export const handler: Handlers<VerifyEmailState, RouteState> = {
     // verified, we can get rid of the cookie
     deleteEmailVerificationCookie(headers)
 
-    return redirect(home, 303, headers)
+    return redirect(startJournal(user.username), 303, headers)
   },
 }
 

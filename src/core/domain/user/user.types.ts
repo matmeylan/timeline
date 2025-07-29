@@ -1,6 +1,6 @@
 import {ZodError} from '@zod/zod'
 import {Zodable} from '../../serde/zod.ts'
-import {LoginSchemaInput} from '../../../routes/(auth)/(guest)/login/index.tsx'
+import {LoginSchemaInput} from '../../../routes/(auth)/(guest)/login.tsx'
 import {SignupSchemaInput} from '../../../routes/(auth)/(guest)/signup.tsx'
 
 export interface User {
@@ -111,5 +111,17 @@ export class EmailVerificationCodeExpiredError extends Error {
 export class InvalidEmailVerificationCodeError extends Error {
   constructor(code: string) {
     super(`Email verification code ${code} is invalid`)
+  }
+}
+
+export class ReservedUsername extends Error implements Zodable<SignupSchemaInput> {
+  constructor(readonly username: string) {
+    super(`"${username}" is already used`)
+  }
+
+  toZod() {
+    return new ZodError([
+      {input: this.username, code: 'custom', path: ['username'], message: this.message},
+    ]) as ZodError<SignupSchemaInput>
   }
 }
