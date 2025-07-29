@@ -1,7 +1,6 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
 import z, {ZodError} from '@zod/zod'
 import {Container} from '../../../components/Container.tsx'
-import {RouteState} from '../../../core/route/state.ts'
 import {RefillingTokenBucket} from '../../../core/auth/rate-limit.ts'
 import {EMAIL_VALIDATION_PATTERN} from '../../../core/serde/email.ts'
 import {UserDoesNotExistError} from '../../../core/domain/user/user.types.ts'
@@ -9,6 +8,7 @@ import {UserService} from '../../../core/domain/user/user.ts'
 import {setPasswordResetSessionTokenCookie} from '../../../core/auth/password.ts'
 import {redirect} from '../../../core/http/redirect.ts'
 import {login, resetPasswordVerifyEmail, signup} from '../../../core/route/routes.ts'
+import {RouteState} from '../../_middleware.ts'
 
 const ipBucket = new RefillingTokenBucket<string>(3, 60)
 const userBucket = new RefillingTokenBucket<string>(3, 60)

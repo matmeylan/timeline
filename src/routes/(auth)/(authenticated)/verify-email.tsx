@@ -7,7 +7,6 @@ import {
 } from '../../../core/auth/email-verification.ts'
 import {ExpiringTokenBucket} from '../../../core/auth/rate-limit.ts'
 import {UserService} from '../../../core/domain/user/user.ts'
-import {RouteState} from '../../../core/route/state.ts'
 import {
   EmailVerificationCodeExpiredError,
   EmailVerificationNotFoundError,
@@ -16,6 +15,7 @@ import {
 import assert from 'node:assert'
 import {redirect} from '../../../core/http/redirect.ts'
 import {home, startJournal, verifyEmailResend} from '../../../core/route/routes.ts'
+import {RouteState} from '../../_middleware.ts'
 
 const bucket = new ExpiringTokenBucket<string>(5, 60 * 30)
 

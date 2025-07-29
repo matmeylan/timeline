@@ -1,8 +1,8 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
 import {Container} from '../components/Container.tsx'
 import {User} from '../core/domain/user/user.types.ts'
-import {RouteState} from '../core/route/state.ts'
 import {userHome, login, logout, signup, startJournal, twoFaPasskey} from '../core/route/routes.ts'
+import {RouteState} from './_middleware.ts'
 
 export const handler: Handlers<HomeState, RouteState> = {
   GET(req, ctx) {

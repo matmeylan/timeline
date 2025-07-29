@@ -1,9 +1,9 @@
 import {Handlers} from '$fresh/server.ts'
-import {RouteState} from '../../../core/route/state.ts'
 import {deleteSessionTokenCookie} from '../../../core/auth/session.ts'
 import {redirect} from '../../../core/http/redirect.ts'
 import {SessionService} from '../../../core/domain/user/session.ts'
 import {login} from '../../../core/route/routes.ts'
+import {RouteState} from '../../_middleware.ts'
 
 export const handler: Handlers<void, RouteState> = {
   GET(req, ctx) {

@@ -1,10 +1,10 @@
 import {Handlers} from '$fresh/server.ts'
 import z from '@zod/zod'
-import {RouteState} from '../../../../core/route/state.ts'
 import {decodeBase64} from '@oslojs/encoding'
 import {PasskeyService} from '../../../../core/domain/user/passkey.ts'
 import {setSessionTokenCookie} from '../../../../core/auth/session.ts'
 import {CredentialNotFoundError, InvalidCredentialError} from '../../../../core/domain/user/passkey.types.ts'
+import {RouteState} from '../../../_middleware.ts'
 
 // Stricter rate limiting can be omitted here since creating challenges are rate-limited
 

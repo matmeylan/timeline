@@ -6,11 +6,11 @@ import {
   getPasswordResetSessionTokenCookie,
 } from '../../../../core/auth/password.ts'
 import {UserService} from '../../../../core/domain/user/user.ts'
-import {RouteState} from '../../../../core/route/state.ts'
 import {WeakPasswordError} from '../../../../core/domain/user/user.types.ts'
 import {setSessionTokenCookie} from '../../../../core/auth/session.ts'
 import {redirect} from '../../../../core/http/redirect.ts'
 import {forgotPassword, home, resetPasswordVerifyEmail} from '../../../../core/route/routes.ts'
+import {RouteState} from '../../../_middleware.ts'
 
 export const handler: Handlers<ResetPasswordState, RouteState> = {
   GET(req, ctx) {

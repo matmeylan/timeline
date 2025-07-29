@@ -36,7 +36,7 @@ export interface EditJournalEntry {
 
 export class SlugReservedError extends Error implements Zodable<CreateJournalInput> {
   constructor(readonly slug: string) {
-    super(`Slug "${slug}" is reserved. Please use another  slug`)
+    super(`Slug "${slug}" is reserved. Please use another slug.`)
   }
 
   toZod() {
@@ -58,4 +58,8 @@ export class SlugAlreadyUsedError extends Error implements Zodable<CreateJournal
   }
 }
 
-export class NotFoundError extends Error {}
+export class JournalNotFoundError extends Error {
+  constructor(readonly slug: string) {
+    super(`Journal "${slug}" was not found.`)
+  }
+}

@@ -1,7 +1,6 @@
 import {FreshContext, Handlers, PageProps} from '$fresh/server.ts'
 import {decodeBase64, encodeBase64} from '@oslojs/encoding'
 import {Container} from '../../../../components/Container.tsx'
-import {RouteState} from '../../../../core/route/state.ts'
 import {PasskeyService} from '../../../../core/domain/user/passkey.ts'
 import {formatDate} from '../../../../core/date/format-date.ts'
 import {
@@ -14,6 +13,7 @@ import RegisterPasskeyButton from '../../../../islands/auth/register-passkey-but
 import assert from 'node:assert'
 import {redirect} from '../../../../core/http/redirect.ts'
 import {twoFaPasskey, verifyEmail} from '../../../../core/route/routes.ts'
+import {RouteState} from '../../../_middleware.ts'
 
 export const handler: Handlers<PasskeysState, RouteState> = {
   GET(req, ctx) {

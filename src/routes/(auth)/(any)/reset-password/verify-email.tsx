@@ -1,7 +1,6 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
 import {Container} from '../../../../components/Container.tsx'
 import {ExpiringTokenBucket} from '../../../../core/auth/rate-limit.ts'
-import {RouteState} from '../../../../core/route/state.ts'
 import {
   deletePasswordResetSessionTokenCookie,
   getPasswordResetSessionTokenCookie,
@@ -9,6 +8,7 @@ import {
 import {UserService} from '../../../../core/domain/user/user.ts'
 import {redirect} from '../../../../core/http/redirect.ts'
 import {forgotPassword, resetPassword} from '../../../../core/route/routes.ts'
+import {RouteState} from '../../../_middleware.ts'
 
 const bucket = new ExpiringTokenBucket<string>(5, 60 * 30)
 

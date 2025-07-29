@@ -3,9 +3,9 @@ import {z, ZodError} from '@zod/zod'
 import {JournalService} from '../../core/domain/journal.ts'
 import {SlugAlreadyUsedError, SlugReservedError} from '../../core/domain/journal.types.ts'
 import {Container} from '../../components/Container.tsx'
-import {AuthenticatedRouteState} from '../../core/route/state.ts'
 import {redirect} from '../../core/http/redirect.ts'
 import {journal as journalRoute} from '../../core/route/routes.ts'
+import {AuthenticatedRouteState} from './_middleware.ts'
 
 export const handler: Handlers<CreateJournalState, AuthenticatedRouteState> = {
   async POST(req, ctx) {

@@ -14,8 +14,9 @@ import * as $_auth_guest_middleware from "./routes/(auth)/(guest)/_middleware.ts
 import * as $_auth_guest_login from "./routes/(auth)/(guest)/login.tsx";
 import * as $_auth_guest_login_passkey from "./routes/(auth)/(guest)/login/passkey.ts";
 import * as $_auth_guest_signup from "./routes/(auth)/(guest)/signup.tsx";
-import * as $_user_slug_ from "./routes/[user]/[slug].tsx";
+import * as $_user_slug_middleware from "./routes/[user]/[slug]/_middleware.ts";
 import * as $_user_slug_edit_entry_ from "./routes/[user]/[slug]/edit/[entry].tsx";
+import * as $_user_slug_index from "./routes/[user]/[slug]/index.tsx";
 import * as $_user_slug_write from "./routes/[user]/[slug]/write.tsx";
 import * as $_user_middleware from "./routes/[user]/_middleware.ts";
 import * as $_user_index from "./routes/[user]/index.tsx";
@@ -55,8 +56,9 @@ const manifest = {
     "./routes/(auth)/(guest)/login.tsx": $_auth_guest_login,
     "./routes/(auth)/(guest)/login/passkey.ts": $_auth_guest_login_passkey,
     "./routes/(auth)/(guest)/signup.tsx": $_auth_guest_signup,
-    "./routes/[user]/[slug].tsx": $_user_slug_,
+    "./routes/[user]/[slug]/_middleware.ts": $_user_slug_middleware,
     "./routes/[user]/[slug]/edit/[entry].tsx": $_user_slug_edit_entry_,
+    "./routes/[user]/[slug]/index.tsx": $_user_slug_index,
     "./routes/[user]/[slug]/write.tsx": $_user_slug_write,
     "./routes/[user]/_middleware.ts": $_user_middleware,
     "./routes/[user]/index.tsx": $_user_index,

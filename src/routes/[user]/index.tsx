@@ -4,12 +4,12 @@ import {Journal} from '../../core/domain/journal.types.ts'
 import {Container} from '../../components/Container.tsx'
 import {journal, startJournal} from '../../core/route/routes.ts'
 import {User} from '../../core/domain/user/user.types.ts'
-import {AuthenticatedRouteState} from '../../core/route/state.ts'
+import {AuthenticatedRouteState} from './_middleware.ts'
 
 export const handler: Handlers<JournalIndexState, AuthenticatedRouteState> = {
   GET(req, ctx) {
     const service = new JournalService()
-    const journals: Journal[] = service.listJournals()
+    const journals: Journal[] = service.listJournals(ctx.state.user.id)
     return ctx.render({
       journals,
       user: ctx.state.user,

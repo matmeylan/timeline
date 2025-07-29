@@ -1,33 +1,23 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
 import {JournalService} from '../../../core/domain/journal.ts'
-import {Journal, NotFoundError} from '../../../core/domain/journal.types.ts'
+import {Journal} from '../../../core/domain/journal.types.ts'
 import {z, ZodError} from '@zod/zod'
 import ContentEditor from '../../../islands/content-editor/content-editor.tsx'
 import {Container} from '../../../components/Container.tsx'
 import {ArrowLeftIcon} from '../../../components/icons.tsx'
 import {Button} from '../../../components/Button.tsx'
 import {redirect} from '../../../core/http/redirect.ts'
-import {AuthenticatedRouteState} from '../../../core/route/state.ts'
 import type {User} from '../../../core/domain/user/user.types.ts'
 import {journal as journalRoute} from '../../../core/route/routes.ts'
+import {JournalRouteState} from './_middleware.ts'
 
-export const handler: Handlers<WriteEntryState, AuthenticatedRouteState> = {
+export const handler: Handlers<WriteEntryState, JournalRouteState> = {
   GET(_req, ctx) {
-    const slug = ctx.params.slug
-    const service = new JournalService()
-    try {
-      const journal = service.getJournalBySlug(slug)
-      return ctx.render({journal, user: ctx.state.user})
-    } catch (err) {
-      if (err instanceof NotFoundError) {
-        return ctx.renderNotFound()
-      }
-      throw err
-    }
+    return ctx.render({journal: ctx.state.journal, user: ctx.state.user})
   },
   async POST(req, ctx) {
     const user = ctx.state.user
-    const slug = ctx.params.slug
+    const journal = ctx.state.journal
     const formData = await req.formData()
     const content = formData.get('content')?.toString()
     const contentType = formData.get('contentType')?.toString()
@@ -36,11 +26,9 @@ export const handler: Handlers<WriteEntryState, AuthenticatedRouteState> = {
     const service = new JournalService()
 
     if (!result.success) {
-      const journal = service.getJournalBySlug(slug)
       return ctx.render({journal, user, form, error: result.error}, {status: 400})
     }
 
-    const journal = service.getJournalBySlug(slug)
     service.writeEntry(journal.id, result.data)
 
     return redirect(journalRoute(user.username, journal.slug), 303)

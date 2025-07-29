@@ -1,7 +1,6 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
 import {z, ZodError} from '@zod/zod'
 import {RefillingTokenBucket, Throttler} from '../../../core/auth/rate-limit.ts'
-import {RouteState} from '../../../core/route/state.ts'
 import {UserService} from '../../../core/domain/user/user.ts'
 import {setSessionTokenCookie} from '../../../core/auth/session.ts'
 import {redirect} from '../../../core/http/redirect.ts'
@@ -10,6 +9,7 @@ import {InvalidPasswordError, UserDoesNotExistError} from '../../../core/domain/
 import {Container} from '../../../components/Container.tsx'
 import LoginWithPasskeyButton from '../../../islands/auth/login-with-passkey-button.tsx'
 import {EMAIL_VALIDATION_PATTERN} from '../../../core/serde/email.ts'
+import {RouteState} from '../../_middleware.ts'
 
 const throttler = new Throttler<string>([0, 1, 2, 4, 8, 16, 30, 60, 180, 300])
 const ipBucket = new RefillingTokenBucket<string>(20, 1)

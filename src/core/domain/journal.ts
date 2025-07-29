@@ -2,7 +2,7 @@ import {slug as generateSlug} from '$slug'
 import {
   Journal,
   JournalEntry,
-  NotFoundError,
+  JournalNotFoundError,
   SlugAlreadyUsedError,
   StartJournal,
   WriteJournalEntry,
@@ -49,16 +49,16 @@ export class JournalService {
     return journal
   }
 
-  listJournals(): Journal[] {
-    const stmt = this.client.db.prepare(`SELECT * FROM journal`)
-    return stmt.all<Journal>()
+  listJournals(ownerId: string): Journal[] {
+    const stmt = this.client.db.prepare(`SELECT * FROM journal WHERE ownerId = :ownerId`)
+    return stmt.all<Journal>({ownerId})
   }
 
   getJournalBySlug(slug: string): Journal {
     const stmt = this.client.db.prepare(`SELECT * FROM journal where slug = :slug`)
     const journal = stmt.get<Journal>({slug})
     if (!journal) {
-      throw new NotFoundError(`Journal ${slug} was not found`)
+      throw new JournalNotFoundError(slug)
     }
     return journal
   }

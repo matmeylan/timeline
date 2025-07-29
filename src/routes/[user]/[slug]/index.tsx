@@ -1,33 +1,25 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
-import {type Journal, type JournalEntry, NotFoundError} from '../../core/domain/journal.types.ts'
-import {JournalService} from '../../core/domain/journal.ts'
-import {Container} from '../../components/Container.tsx'
-import {formatDate} from '../../core/date/format-date.ts'
-import {Prose} from '../../components/Prose.tsx'
+import {type Journal, type JournalEntry} from '../../../core/domain/journal.types.ts'
+import {JournalService} from '../../../core/domain/journal.ts'
+import {Container} from '../../../components/Container.tsx'
+import {formatDate} from '../../../core/date/format-date.ts'
+import {Prose} from '../../../components/Prose.tsx'
 import type {ComponentChildren} from 'preact'
 import * as markdown from '@libs/markdown'
-import {ArrowLeftIcon, WriteIcon} from '../../components/icons.tsx'
-import {Button} from '../../components/Button.tsx'
-import {AuthenticatedRouteState} from '../../core/route/state.ts'
-import {User} from '../../core/domain/user/user.types.ts'
-import {editJournalEntry, userHome, writeJournalEntry} from '../../core/route/routes.ts'
+import {ArrowLeftIcon, WriteIcon} from '../../../components/icons.tsx'
+import {Button} from '../../../components/Button.tsx'
+import {User} from '../../../core/domain/user/user.types.ts'
+import {editJournalEntry, userHome, writeJournalEntry} from '../../../core/route/routes.ts'
+import {JournalRouteState} from './_middleware.ts'
 
-export const handler: Handlers<JournalState, AuthenticatedRouteState> = {
+export const handler: Handlers<JournalState, JournalRouteState> = {
   async GET(req, ctx) {
     const service = new JournalService()
-    try {
-      const slug = ctx.params.slug
-      const journal = service.getJournalBySlug(slug)
-      const entries: JournalEntry[] = service.listJournalEntries(journal.id, {createdAt: 'DESC'})
-      const renderedEntries = await renderEntries(entries) // render markdown
+    const journal = ctx.state.journal
+    const entries: JournalEntry[] = service.listJournalEntries(journal.id, {createdAt: 'DESC'})
+    const renderedEntries = await renderEntries(entries) // render markdown
 
-      return ctx.render({journal, entries: renderedEntries, user: ctx.state.user})
-    } catch (err) {
-      if (err instanceof NotFoundError) {
-        return ctx.renderNotFound()
-      }
-      throw err
-    }
+    return ctx.render({journal, entries: renderedEntries, user: ctx.state.user})
   },
 }
 

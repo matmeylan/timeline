@@ -4,51 +4,41 @@ import {Button} from '../../../../components/Button.tsx'
 import {Container} from '../../../../components/Container.tsx'
 import {ArrowLeftIcon} from '../../../../components/icons.tsx'
 import {JournalService} from '../../../../core/domain/journal.ts'
-import {Journal, NotFoundError} from '../../../../core/domain/journal.types.ts'
+import {Journal} from '../../../../core/domain/journal.types.ts'
 import ContentEditor from '../../../../islands/content-editor/content-editor.tsx'
 import {redirect} from '../../../../core/http/redirect.ts'
-import {AuthenticatedRouteState} from '../../../../core/route/state.ts'
 import {User} from '../../../../core/domain/user/user.types.ts'
 import {journal as journalRoute} from '../../../../core/route/routes.ts'
+import {JournalRouteState} from '../_middleware.ts'
 
-export const handler: Handlers<EditEntryState, AuthenticatedRouteState> = {
+export const handler: Handlers<EditEntryState, JournalRouteState> = {
   GET(req, ctx) {
     const user = ctx.state.user
-    const slug = ctx.params.slug
     const entryId = ctx.params.entry
+    const journal = ctx.state.journal
     const service = new JournalService()
-    try {
-      const journal = service.getJournalBySlug(slug)
-      const entry = service.getJournalEntry(journal.id, entryId)
-      const form: Form = {content: entry.content, contentType: entry.contentType}
-      return ctx.render({journal, form, user})
-    } catch (err) {
-      if (err instanceof NotFoundError) {
-        return ctx.renderNotFound()
-      }
-      throw err
-    }
+    const entry = service.getJournalEntry(journal.id, entryId)
+    const form: Form = {content: entry.content, contentType: entry.contentType}
+    return ctx.render({journal, form, user})
   },
   async POST(req, ctx) {
     const user = ctx.state.user
-    const slug = ctx.params.slug
-    const entryId = ctx.params.entryId
+    const entryId = ctx.params.entry
     const formData = await req.formData()
     const content = formData.get('content')?.toString()
     const contentType = formData.get('contentType')?.toString()
     const form: Form = {content, contentType}
     const result = EditEntrySchema.safeParse(form) // TODO: sanitize markdown
+    const journal = ctx.state.journal
     const service = new JournalService()
 
     if (!result.success) {
-      const journal = service.getJournalBySlug(slug)
       return ctx.render({user, journal, form, error: result.error}, {status: 400})
     }
 
-    const journal = service.getJournalBySlug(slug)
     service.editEntry(journal.id, entryId, result.data)
 
-    return redirect(`/${journal.slug}#${entryId}`, 303)
+    return redirect(journalRoute(user.username, journal.slug) + `#${entryId}`, 303)
   },
 }
 
