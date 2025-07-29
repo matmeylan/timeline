@@ -1,7 +1,7 @@
 import {Handlers} from '$fresh/server.ts'
 import {RefillingTokenBucket} from '../../../../core/auth/rate-limit.ts'
-import {createWebAuthnChallenge} from '../../../../core/auth/webauthn.ts'
 import {encodeBase64} from '@oslojs/encoding'
+import {PasskeyService} from '../../../../core/domain/user/passkey.ts'
 
 const rateLimitBucket = new RefillingTokenBucket<string>(30, 10)
 
@@ -13,7 +13,8 @@ export const handler: Handlers = {
       return new Response('Too many requests', {status: 429})
     }
 
-    const challenge = createWebAuthnChallenge()
+    const passkeyService = new PasskeyService()
+    const challenge = passkeyService.createPasskeyChallenge()
 
     return new Response(
       JSON.stringify({

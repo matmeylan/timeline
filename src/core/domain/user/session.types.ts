@@ -1,10 +1,6 @@
 import {User} from './user.types.ts'
 
-export interface SessionFlags {
-  twoFactorVerified: boolean
-}
-
-export interface Session extends SessionFlags {
+export interface Session {
   id: string
   expiresAt: Date | string
   userId: string

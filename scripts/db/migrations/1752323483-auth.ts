@@ -21,8 +21,7 @@ export class Auth1752323483 implements Migration {
       CREATE TABLE session (
           id TEXT NOT NULL PRIMARY KEY,
           user_id TEXT NOT NULL REFERENCES user(id),
-          expires_at TEXT NOT NULL,
-          two_factor_verified INTEGER NOT NULL DEFAULT 0
+          expires_at TEXT NOT NULL
       );
 
       CREATE TABLE email_verification_request (
@@ -39,8 +38,7 @@ export class Auth1752323483 implements Migration {
           email TEXT NOT NULL,
           code TEXT NOT NULL,
           expires_at TEXT NOT NULL,
-          email_verified INTEGER NOT NULL NOT NULL DEFAULT 0,
-          two_factor_verified INTEGER NOT NULL DEFAULT 0
+          email_verified INTEGER NOT NULL NOT NULL DEFAULT 0
       );
 
       CREATE TABLE passkey_credential (

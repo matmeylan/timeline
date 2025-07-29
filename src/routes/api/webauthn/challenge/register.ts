@@ -1,6 +1,5 @@
 import {Handlers} from '$fresh/server.ts'
 import {RefillingTokenBucket} from '../../../../core/auth/rate-limit.ts'
-import {createWebAuthnChallenge, generateRandomCredentialsId} from '../../../../core/auth/webauthn.ts'
 import {encodeBase64} from '@oslojs/encoding'
 import {PasskeyService} from '../../../../core/domain/user/passkey.ts'
 import {getSessionTokenCookie} from '../../../../core/auth/session.ts'
@@ -28,9 +27,7 @@ export const handler: Handlers = {
     }
 
     const passkeyService = new PasskeyService()
-    const credentials = passkeyService.getUserPasskeyCredentials(user.id)
-    const credentialUserId = generateRandomCredentialsId()
-    const challenge = createWebAuthnChallenge()
+    const {credentials, credentialUserId, challenge} = passkeyService.createPasskeyRegisterData(user.id)
 
     return new Response(
       JSON.stringify({

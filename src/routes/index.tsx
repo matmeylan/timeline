@@ -60,7 +60,7 @@ function UserNav(props: {user: User}) {
 
 function AnonymousNav() {
   return (
-    <div class="flex flex-row gap-2">
+    <div class="inline-flex flex-col">
       <a href="/login" class="underline">
         Login
       </a>

@@ -81,7 +81,7 @@ export class UserService {
       sessionToken,
       stmt: createSessionStmt,
       stmtValue: createSession,
-    } = this.sessionService.createSessionForTransaction(user.id, {twoFactorVerified: false})
+    } = this.sessionService.createSessionForTransaction(user.id)
 
     try {
       this.client.db.transaction(() => {
@@ -231,9 +231,7 @@ export class UserService {
       throw new InvalidPasswordError()
     }
 
-    const {session, sessionToken} = this.sessionService.createSession(user.id, {
-      twoFactorVerified: false,
-    })
+    const {session, sessionToken} = this.sessionService.createSession(user.id)
 
     return {session, sessionToken}
   }
@@ -331,13 +329,10 @@ export class UserService {
     this.client.db.sql`DELETE FROM password_reset_session WHERE user_id = ${userId}`
   }
 
-  setPasswordResetSessionAsEmailVerified(sessionId: string): void {
+  setUserAsEmailVerified(sessionId: string, userId: string, email: string) {
     this.client.db.sql`UPDATE password_reset_session SET email_verified = 1 WHERE id = ${sessionId}`
-  }
-
-  setUserAsEmailVerifiedIfEmailMatches(userId: string, email: string): boolean {
     using stmt = this.client.db.prepare('UPDATE user SET email_verified = 1 WHERE id = :userId AND email = :email')
-    return stmt.run({userId, email}) > 0
+    return stmt.run({userId, email}) > 0 // emailMatches ?
   }
 
   async resetPassword(userId: string, newPassword: string) {
@@ -351,9 +346,7 @@ export class UserService {
     const passwordHash = await hashPassword(newPassword)
     this.client.db.sql`UPDATE user SET password_hash = ${passwordHash} WHERE id = ${userId}`
 
-    const {session, sessionToken} = this.sessionService.createSession(userId, {
-      twoFactorVerified: false,
-    })
+    const {session, sessionToken} = this.sessionService.createSession(userId)
     return {session, sessionToken}
   }
 

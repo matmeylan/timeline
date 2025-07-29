@@ -1,4 +1,4 @@
-import {Session, SessionFlags, SessionValidationResult} from './session.types.ts'
+import {Session, SessionValidationResult} from './session.types.ts'
 import {generateSessionToken} from '../../auth/session.ts'
 import {encodeHexLowerCase} from '@oslojs/encoding'
 import {sha256} from '@oslojs/crypto/sha2'
@@ -9,30 +9,28 @@ import {addDays, subDays} from 'date-fns'
 export class SessionService {
   constructor(private readonly client: SqliteClient = new SqliteClient()) {}
 
-  createSessionForTransaction(userId: string, flags: SessionFlags) {
+  createSessionForTransaction(userId: string) {
     const token = generateSessionToken()
     const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
     const session: Session = {
       id: sessionId,
       userId,
       expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
-      twoFactorVerified: flags.twoFactorVerified,
     }
     const stmt = this.client.db.prepare(
-      'INSERT INTO session (id, user_id, expires_at, two_factor_verified) VALUES (:id, :userId, :expiresAt, :twoFactorVerified)',
+      'INSERT INTO session (id, user_id, expires_at) VALUES (:id, :userId, :expiresAt)',
     )
     const stmtValue = {
       id: session.id,
       userId: session.userId,
       expiresAt: session.expiresAt,
-      twoFactorVerified: Number(session.twoFactorVerified),
     }
 
     return {session, sessionToken: token, stmt, stmtValue}
   }
 
-  createSession(userId: string, flags: SessionFlags) {
-    const {session, sessionToken, stmt, stmtValue} = this.createSessionForTransaction(userId, flags)
+  createSession(userId: string) {
+    const {session, sessionToken, stmt, stmtValue} = this.createSessionForTransaction(userId)
     stmt.run(stmtValue) // run the query, no transaction needed here
     return {session, sessionToken}
   }
@@ -42,7 +40,7 @@ export class SessionService {
     using stmt = this.client.db.prepare(
       `
         SELECT 
-          session.id, session.user_id, session.expires_at, session.two_factor_verified, 
+          session.id, session.user_id, session.expires_at,
           user.email, user.email_verified, user.name, user.username,
           IIF(passkey_credential.id IS NOT NULL, 1, 0) as registered_passkey
         FROM session
@@ -55,7 +53,6 @@ export class SessionService {
       id: string
       user_id: string
       expires_at: string
-      two_factor_verified: number
       email: string
       email_verified: number
       name: string
@@ -70,7 +67,6 @@ export class SessionService {
       id: res.id,
       userId: res.user_id,
       expiresAt: new Date(res.expires_at),
-      twoFactorVerified: Boolean(res.two_factor_verified),
     }
     const user: User = {
       id: res.user_id,
@@ -94,10 +90,6 @@ export class SessionService {
       })
     }
     return {session, user}
-  }
-
-  setSessionAs2FAVerified(sessionId: string): void {
-    this.client.db.sql`UPDATE session SET two_factor_verified = 1 WHERE id = ${sessionId}`
   }
 
   invalidateSession(sessionId: string) {

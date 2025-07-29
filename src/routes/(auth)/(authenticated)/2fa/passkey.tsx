@@ -1,36 +1,18 @@
 import {FreshContext, Handlers, PageProps} from '$fresh/server.ts'
-import {encodeBase64} from '@oslojs/encoding'
+import {decodeBase64, encodeBase64} from '@oslojs/encoding'
 import {Container} from '../../../../components/Container.tsx'
 import {RouteState} from '../../../../core/route/state.ts'
 import {PasskeyService} from '../../../../core/domain/user/passkey.ts'
 import {formatDate} from '../../../../core/date/format-date.ts'
-import {decodeBase64} from '@oslojs/encoding'
-import type {
-  AttestationStatement,
-  AuthenticatorData,
-  ClientData,
-  COSEEC2PublicKey,
-  COSERSAPublicKey,
-} from '@oslojs/webauthn'
 import {
-  parseAttestationObject,
-  AttestationStatementFormat,
-  parseClientDataJSON,
-  coseAlgorithmES256,
-  coseEllipticCurveP256,
-  ClientDataType,
-  coseAlgorithmRS256,
-} from '@oslojs/webauthn'
-import {ECDSAPublicKey, p256} from '@oslojs/crypto/ecdsa'
-import {RSAPublicKey} from '@oslojs/crypto/rsa'
-import {verifyWebAuthnChallenge} from '../../../../core/auth/webauthn.ts'
-import {TooMany2faCredentialsError, WebAuthnUserCredential} from '../../../../core/domain/user/passkey.types.ts'
+  InvalidData,
+  TooMany2faCredentialsError,
+  WebAuthnUserCredential,
+} from '../../../../core/domain/user/passkey.types.ts'
 import {User} from '../../../../core/domain/user/user.types.ts'
 import RegisterPasskeyButton from '../../../../islands/auth/register-passkey-button.tsx'
 import assert from 'node:assert'
 import {redirect} from '../../../../core/http/redirect.ts'
-import {Session} from '../../../../core/domain/user/session.types.ts'
-import {SessionService} from '../../../../core/domain/user/session.ts'
 
 export const handler: Handlers<PasskeysState, RouteState> = {
   GET(req, ctx) {
@@ -56,7 +38,7 @@ export const handler: Handlers<PasskeysState, RouteState> = {
     if (action === 'delete') {
       return deletePasskey(formData, user, ctx)
     } else if (action === 'add') {
-      return addPasskey(formData, user, session, ctx)
+      return addPasskey(formData, user, ctx)
     } else {
       throw new Error(`Unsupported action ${action}`)
     }
@@ -119,13 +101,11 @@ function deletePasskey(formData: FormData, user: User, ctx: FreshContext<RouteSt
 
   const passkeyService = new PasskeyService()
   const credentialId = decodeBase64(encodedCredentialId)
-  passkeyService.deletePasskeyCredential(user.id, credentialId)
-
-  const passkeys = passkeyService.getUserPasskeyCredentials(user.id)
+  const passkeys = passkeyService.deletePasskeyCredential(user.id, credentialId)
   return ctx.render({passkeys: passkeys.map(toPasskeyState)})
 }
 
-function addPasskey(formData: FormData, user: User, session: Session, ctx: FreshContext<RouteState, PasskeysState>) {
+function addPasskey(formData: FormData, user: User, ctx: FreshContext<RouteState, PasskeysState>) {
   const encodedAttestationObject = formData.get('attestationObject')
   const encodedClientDataJSON = formData.get('clientDataJson')
   const name = new Date().toISOString() // name is the date when it was generated ?
@@ -142,124 +122,24 @@ function addPasskey(formData: FormData, user: User, session: Session, ctx: Fresh
     return ctx.render({passkeys: passkeys.map(toPasskeyState), error})
   }
 
-  let attestationObjectBytes: Uint8Array, clientDataJSON: Uint8Array
+  let attestationObject: Uint8Array, clientDataJSON: Uint8Array
   try {
-    attestationObjectBytes = decodeBase64(encodedAttestationObject)
+    attestationObject = decodeBase64(encodedAttestationObject)
     clientDataJSON = decodeBase64(encodedClientDataJSON)
   } catch {
     const error = 'Invalid or missing fields, please try again.'
     return ctx.render({passkeys: passkeys.map(toPasskeyState), error})
   }
 
-  let attestationStatement: AttestationStatement
-  let authenticatorData: AuthenticatorData
   try {
-    const attestationObject = parseAttestationObject(attestationObjectBytes)
-    attestationStatement = attestationObject.attestationStatement
-    authenticatorData = attestationObject.authenticatorData
-  } catch {
-    const error = 'Invalid data. Please try again'
-    return ctx.render({passkeys: passkeys.map(toPasskeyState), error})
-  }
-  if (attestationStatement.format !== AttestationStatementFormat.None) {
-    const error = 'Invalid data. Please try again'
-    return ctx.render({passkeys: passkeys.map(toPasskeyState), error})
-  }
-  // TODO: Update host
-  if (!authenticatorData.verifyRelyingPartyIdHash('localhost')) {
-    const error = 'Invalid host. Please try again'
-    return ctx.render({passkeys: passkeys.map(toPasskeyState), error})
-  }
-  if (!authenticatorData.userPresent || !authenticatorData.userVerified) {
-    const error = 'Invalid data. Please try again'
-    return ctx.render({passkeys: passkeys.map(toPasskeyState), error})
-  }
-  if (authenticatorData.credential === null) {
-    const error = 'Invalid data. Please try again'
-    return ctx.render({passkeys: passkeys.map(toPasskeyState), error})
-  }
-
-  let clientData: ClientData
-  try {
-    clientData = parseClientDataJSON(clientDataJSON)
-  } catch {
-    const error = 'Invalid data. Please try again'
-    return ctx.render({passkeys: passkeys.map(toPasskeyState), error})
-  }
-  if (clientData.type !== ClientDataType.Create) {
-    const error = 'Invalid data. Please try again'
-    return ctx.render({passkeys: passkeys.map(toPasskeyState), error})
-  }
-
-  if (!verifyWebAuthnChallenge(clientData.challenge)) {
-    const error = 'Invalid data. Please try again'
-    return ctx.render({passkeys: passkeys.map(toPasskeyState), error})
-  }
-  // TODO: Update origin
-  if (clientData.origin !== 'http://localhost:8000') {
-    const error = 'Invalid origin. Please try again'
-    return ctx.render({passkeys: passkeys.map(toPasskeyState), error})
-  }
-  if (clientData.crossOrigin !== null && clientData.crossOrigin) {
-    const error = 'Invalid data. Please try again'
-    return ctx.render({passkeys: passkeys.map(toPasskeyState), error})
-  }
-
-  let credential: WebAuthnUserCredential
-  if (authenticatorData.credential.publicKey.algorithm() === coseAlgorithmES256) {
-    let cosePublicKey: COSEEC2PublicKey
-    try {
-      cosePublicKey = authenticatorData.credential.publicKey.ec2()
-    } catch {
-      const error = 'Invalid data. Please try again'
-      return ctx.render({passkeys: passkeys.map(toPasskeyState), error})
-    }
-    if (cosePublicKey.curve !== coseEllipticCurveP256) {
-      const error = 'Invalid data. Please try again'
-      return ctx.render({passkeys: passkeys.map(toPasskeyState), error})
-    }
-    const encodedPublicKey = new ECDSAPublicKey(p256, cosePublicKey.x, cosePublicKey.y).encodeSEC1Uncompressed()
-    credential = {
-      id: authenticatorData.credential.id,
-      userId: user.id,
-      algorithmId: coseAlgorithmES256,
-      name,
-      publicKey: encodedPublicKey,
-    }
-  } else if (authenticatorData.credential.publicKey.algorithm() === coseAlgorithmRS256) {
-    let cosePublicKey: COSERSAPublicKey
-    try {
-      cosePublicKey = authenticatorData.credential.publicKey.rsa()
-    } catch {
-      const error = 'Invalid data. Please try again'
-      return ctx.render({passkeys: passkeys.map(toPasskeyState), error})
-    }
-    const encodedPublicKey = new RSAPublicKey(cosePublicKey.n, cosePublicKey.e).encodePKCS1()
-    credential = {
-      id: authenticatorData.credential.id,
-      userId: user.id,
-      algorithmId: coseAlgorithmRS256,
-      name,
-      publicKey: encodedPublicKey,
-    }
-  } else {
-    const error = 'Unsupported algorithm. Please try again'
-    return ctx.render({passkeys: passkeys.map(toPasskeyState), error})
-  }
-
-  try {
+    const credential = passkeyService.parsePasskeyCreateCredentialData(user.id, {attestationObject, clientDataJSON})
     passkeyService.createPasskeyCredential(credential)
   } catch (e) {
-    if (e instanceof TooMany2faCredentialsError) {
+    if (e instanceof TooMany2faCredentialsError || e instanceof InvalidData) {
       const error = 'Invalid data. Please try again'
       return ctx.render({passkeys: passkeys.map(toPasskeyState), error})
     }
     throw e
-  }
-
-  if (!session.twoFactorVerified) {
-    const sessionService = new SessionService()
-    sessionService.setSessionAs2FAVerified(session.id)
   }
 
   return redirect('/2fa/passkey', 303)

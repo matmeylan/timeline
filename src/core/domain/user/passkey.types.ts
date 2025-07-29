@@ -23,3 +23,9 @@ export class InvalidCredentialError extends Error {
     super(`Credential signature is not valid`)
   }
 }
+
+export class InvalidData extends Error {
+  constructor() {
+    super(`Invalid data. Please try again`)
+  }
+}

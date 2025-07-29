@@ -39,10 +39,9 @@ export const handler: Handlers<VerifyEmailForPasswordResetState, RouteState> = {
     if (!session) {
       return ctx.render({error: 'Invalid or missing code'}, {status: 401})
     }
-    // TODO figure this out ?
-    // if (session.emailVerified) {
-    //   return ctx.render({email: session.email, error: 'Forbidden'}, {status: 403})
-    // }
+    if (session.emailVerified) {
+      return ctx.render({email: session.email, error: 'Forbidden'}, {status: 403})
+    }
     if (!bucket.check(session.userId, 1)) {
       return ctx.render({email: session.email, rateLimitError: 'Too many requests 1'}, {status: 429})
     }
@@ -63,8 +62,7 @@ export const handler: Handlers<VerifyEmailForPasswordResetState, RouteState> = {
     }
     bucket.reset(session.userId)
 
-    userService.setPasswordResetSessionAsEmailVerified(session.id)
-    const emailMatches = userService.setUserAsEmailVerifiedIfEmailMatches(session.userId, session.email)
+    const emailMatches = userService.setUserAsEmailVerified(session.id, session.userId, session.email)
     if (!emailMatches) {
       return ctx.render({email: session.email, error: 'Incorrect code'}, {status: 400})
     }
