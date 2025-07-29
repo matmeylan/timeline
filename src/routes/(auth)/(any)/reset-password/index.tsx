@@ -10,40 +10,40 @@ import {RouteState} from '../../../../core/route/state.ts'
 import {WeakPasswordError} from '../../../../core/domain/user/user.types.ts'
 import {setSessionTokenCookie} from '../../../../core/auth/session.ts'
 import {redirect} from '../../../../core/http/redirect.ts'
+import {forgotPassword, home, resetPasswordVerifyEmail} from '../../../../core/route/routes.ts'
 
 export const handler: Handlers<ResetPasswordState, RouteState> = {
   GET(req, ctx) {
     const resetToken = getPasswordResetSessionTokenCookie(req.headers)
     if (!resetToken) {
-      return redirect('/forgot-password', 303)
+      return redirect(forgotPassword, 303)
     }
     const userService = new UserService()
     const {session} = userService.validatePasswordResetSessionRequest(resetToken)
     if (!session) {
       const headers = new Headers()
       deletePasswordResetSessionTokenCookie(headers)
-      return redirect('/forgot-password', 303, headers)
+      return redirect(forgotPassword, 303, headers)
     }
     if (!session.emailVerified) {
-      return redirect('/reset-password/verify-email', 303)
+      return redirect(resetPasswordVerifyEmail, 303)
     }
     return ctx.render()
   },
   async POST(req, ctx) {
     const resetToken = getPasswordResetSessionTokenCookie(req.headers)
     if (!resetToken) {
-      return redirect('/forgot-password', 303)
+      return redirect(forgotPassword, 303)
     }
     const headers = new Headers()
     const userService = new UserService()
     const {session: passwordResetSession, user} = userService.validatePasswordResetSessionRequest(resetToken)
     if (!passwordResetSession) {
       deletePasswordResetSessionTokenCookie(headers)
-      return redirect('/forgot-password', 303, headers)
+      return redirect(forgotPassword, 303, headers)
     }
     if (!passwordResetSession.emailVerified) {
-      headers.set('location', `/reset-password/verify-email`)
-      return redirect('/reset-password/verify-email', 303, headers)
+      return redirect(resetPasswordVerifyEmail, 303, headers)
     }
     const formData = await req.formData()
     const password = formData.get('password')?.toString()
@@ -56,7 +56,7 @@ export const handler: Handlers<ResetPasswordState, RouteState> = {
       const {session, sessionToken} = await userService.resetPassword(user.id, result.data.password)
       setSessionTokenCookie(headers, sessionToken, session.expiresAt)
       deletePasswordResetSessionTokenCookie(headers)
-      return redirect('/', 303, headers)
+      return redirect(home, 303, headers)
     } catch (err) {
       if (err instanceof WeakPasswordError) {
         return ctx.render({error: err.toZod()}, {status: 400})

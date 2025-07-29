@@ -2,6 +2,7 @@ import {Handlers, PageProps} from '$fresh/server.ts'
 import {Container} from '../components/Container.tsx'
 import {User} from '../core/domain/user/user.types.ts'
 import {RouteState} from '../core/route/state.ts'
+import {login, logout, signup, twoFaPasskey} from '../core/route/routes.ts'
 
 export const handler: Handlers<HomeState, RouteState> = {
   GET(req, ctx) {
@@ -47,10 +48,10 @@ function UserNav(props: {user: User}) {
     <>
       <pre>{JSON.stringify(props, null, 2)}</pre>
       <div class="mt-4 inline-flex flex-col gap-2">
-        <a href="/2fa/passkey" class="underline">
+        <a href={twoFaPasskey} class="underline">
           Passkeys
         </a>
-        <a href="/logout" class="underline">
+        <a href={logout} class="underline">
           Sign out
         </a>
       </div>
@@ -61,10 +62,10 @@ function UserNav(props: {user: User}) {
 function AnonymousNav() {
   return (
     <div class="inline-flex flex-col">
-      <a href="/login" class="underline">
+      <a href={login} class="underline">
         Login
       </a>
-      <a href="/signup" class="underline">
+      <a href={signup} class="underline">
         Register
       </a>
     </div>

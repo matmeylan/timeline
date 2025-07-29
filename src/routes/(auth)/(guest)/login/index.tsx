@@ -9,6 +9,7 @@ import {InvalidPasswordError, UserDoesNotExistError} from '../../../../core/doma
 import {setSessionTokenCookie} from '../../../../core/auth/session.ts'
 import LoginWithPasskeyButton from '../../../../islands/auth/login-with-passkey-button.tsx'
 import {redirect} from '../../../../core/http/redirect.ts'
+import {forgotPassword, home, signup, verifyEmail} from '../../../../core/route/routes.ts'
 
 const throttler = new Throttler<string>([0, 1, 2, 4, 8, 16, 30, 60, 180, 300])
 const ipBucket = new RefillingTokenBucket<string>(20, 1)
@@ -54,9 +55,9 @@ export const handler: Handlers<LoginState, RouteState> = {
       setSessionTokenCookie(headers, sessionToken, session.expiresAt)
 
       if (!user.emailVerified) {
-        return redirect('/verify-email', 303, headers)
+        return redirect(verifyEmail, 303, headers)
       }
-      return redirect('/', 303, headers)
+      return redirect(home, 303, headers)
     } catch (err) {
       if (err instanceof UserDoesNotExistError) {
         return ctx.render({error: err.toZod(), form}, {status: 400})
@@ -105,10 +106,10 @@ export default function LoginPage(props: PageProps<LoginState>) {
         <LoginWithPasskeyButton />
       </div>
       <div>
-        <a href={'/forgot-password?email=' + encodeURIComponent(form?.email || '')}>Forgot password</a>
+        <a href={forgotPassword + '?email=' + encodeURIComponent(form?.email || '')}>Forgot password</a>
       </div>
       <div>
-        <a href={'/signup?email=' + encodeURIComponent(form?.email || '')}>Sign up</a>
+        <a href={signup + '?email=' + encodeURIComponent(form?.email || '')}>Sign up</a>
       </div>
     </Container>
   )

@@ -15,6 +15,7 @@ import {
 } from '../../../core/domain/user/user.types.ts'
 import assert from 'node:assert'
 import {redirect} from '../../../core/http/redirect.ts'
+import {home, verifyEmailResend} from '../../../core/route/routes.ts'
 
 const bucket = new ExpiringTokenBucket<string>(5, 60 * 30)
 
@@ -25,7 +26,7 @@ export const handler: Handlers<VerifyEmailState, RouteState> = {
 
     // already verified ?
     if (user.emailVerified) {
-      return redirect('/', 303)
+      return redirect(home, 303)
     }
 
     const headers = new Headers()
@@ -90,7 +91,7 @@ export const handler: Handlers<VerifyEmailState, RouteState> = {
     // verified, we can get rid of the cookie
     deleteEmailVerificationCookie(headers)
 
-    return redirect('/', 303, headers)
+    return redirect(home, 303, headers)
   },
 }
 
@@ -111,7 +112,7 @@ export default function VerifyEmailPage(props: PageProps<VerifyEmailState>) {
         {resentTo ? (
           <p>A code has been resent to {resentTo}</p>
         ) : (
-          <form method="post" action="/verify-email-resend">
+          <form method="post" action={verifyEmailResend}>
             <button type="submit">Resend code</button>
           </form>
         )}

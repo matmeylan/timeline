@@ -1,6 +1,7 @@
 import {RouteState} from '../../../core/route/state.ts'
 import {FreshContext} from '$fresh/server.ts'
 import {redirect} from '../../../core/http/redirect.ts'
+import {home, verifyEmail} from '../../../core/route/routes.ts'
 
 export function handler(req: Request, ctx: FreshContext<RouteState>) {
   if (ctx.destination !== 'route') {
@@ -11,9 +12,9 @@ export function handler(req: Request, ctx: FreshContext<RouteState>) {
   const {user} = ctx.state
   if (user) {
     if (user.emailVerified) {
-      return redirect('/', 303)
+      return redirect(home, 303)
     } else {
-      return redirect('/verify-email', 303)
+      return redirect(verifyEmail, 303)
     }
   }
 

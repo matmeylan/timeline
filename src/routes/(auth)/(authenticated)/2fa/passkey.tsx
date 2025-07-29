@@ -13,6 +13,7 @@ import {User} from '../../../../core/domain/user/user.types.ts'
 import RegisterPasskeyButton from '../../../../islands/auth/register-passkey-button.tsx'
 import assert from 'node:assert'
 import {redirect} from '../../../../core/http/redirect.ts'
+import {twoFaPasskey, verifyEmail} from '../../../../core/route/routes.ts'
 
 export const handler: Handlers<PasskeysState, RouteState> = {
   GET(req, ctx) {
@@ -20,7 +21,7 @@ export const handler: Handlers<PasskeysState, RouteState> = {
     assert(user, 'user not authenticated')
 
     if (!user.emailVerified) {
-      return redirect('/verify-email', 303)
+      return redirect(verifyEmail, 303)
     }
 
     const passkeyService = new PasskeyService()
@@ -142,5 +143,5 @@ function addPasskey(formData: FormData, user: User, ctx: FreshContext<RouteState
     throw e
   }
 
-  return redirect('/2fa/passkey', 303)
+  return redirect(twoFaPasskey, 303)
 }

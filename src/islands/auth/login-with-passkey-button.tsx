@@ -1,7 +1,7 @@
-import {decodeBase64} from '@oslojs/encoding'
+import {decodeBase64, encodeBase64} from '@oslojs/encoding'
 import z from '@zod/zod'
-import {encodeBase64} from '@oslojs/encoding'
 import {useSignal} from '@preact/signals'
+import {home, loginViaPasskey} from '../../core/route/routes.ts'
 
 export default function LoginWithPasskeyButton() {
   const error = useSignal('')
@@ -40,7 +40,7 @@ async function loginWithPasskey() {
     throw new Error('Unexpected error')
   }
 
-  const response = await fetch('/login/passkey', {
+  const response = await fetch(loginViaPasskey, {
     method: 'POST',
     // this example uses JSON but you can use something like CBOR to get something more compact
     body: JSON.stringify({
@@ -52,7 +52,7 @@ async function loginWithPasskey() {
   })
 
   if (response.ok) {
-    document.location = '/'
+    document.location = home
     return
   } else {
     passkeyErrorMessage = await response.text()

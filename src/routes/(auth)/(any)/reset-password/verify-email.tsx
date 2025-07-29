@@ -8,6 +8,7 @@ import {
 } from '../../../../core/auth/password.ts'
 import {UserService} from '../../../../core/domain/user/user.ts'
 import {redirect} from '../../../../core/http/redirect.ts'
+import {forgotPassword, resetPassword} from '../../../../core/route/routes.ts'
 
 const bucket = new ExpiringTokenBucket<string>(5, 60 * 30)
 
@@ -15,24 +16,24 @@ export const handler: Handlers<VerifyEmailForPasswordResetState, RouteState> = {
   GET(req, ctx) {
     const resetToken = getPasswordResetSessionTokenCookie(req.headers)
     if (!resetToken) {
-      return redirect('/forgot-password', 303)
+      return redirect(forgotPassword, 303)
     }
     const headers = new Headers()
     const userService = new UserService()
     const {session} = userService.validatePasswordResetSessionRequest(resetToken)
     if (!session) {
       deletePasswordResetSessionTokenCookie(headers)
-      return redirect('/forgot-password', 303, headers)
+      return redirect(forgotPassword, 303, headers)
     }
     if (session.emailVerified) {
-      return redirect('/reset-password', 303, headers)
+      return redirect(resetPassword, 303, headers)
     }
     return ctx.render({email: session.email})
   },
   async POST(req, ctx) {
     const resetToken = getPasswordResetSessionTokenCookie(req.headers)
     if (!resetToken) {
-      return redirect('/forgot-password', 303)
+      return redirect(forgotPassword, 303)
     }
     const userService = new UserService()
     const {session} = userService.validatePasswordResetSessionRequest(resetToken)
@@ -66,7 +67,7 @@ export const handler: Handlers<VerifyEmailForPasswordResetState, RouteState> = {
     if (!emailMatches) {
       return ctx.render({email: session.email, error: 'Incorrect code'}, {status: 400})
     }
-    return redirect('/reset-password', 303)
+    return redirect(resetPassword, 303)
   },
 }
 

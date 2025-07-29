@@ -3,6 +3,7 @@ import {RouteState} from '../../../core/route/state.ts'
 import {deleteSessionTokenCookie} from '../../../core/auth/session.ts'
 import {redirect} from '../../../core/http/redirect.ts'
 import {SessionService} from '../../../core/domain/user/session.ts'
+import {login} from '../../../core/route/routes.ts'
 
 export const handler: Handlers<void, RouteState> = {
   GET(req, ctx) {
@@ -12,6 +13,6 @@ export const handler: Handlers<void, RouteState> = {
       sessionService.invalidateSession(ctx.state.session.id)
       deleteSessionTokenCookie(headers)
     }
-    return redirect('/login', 303, headers)
+    return redirect(login, 303, headers)
   },
 }

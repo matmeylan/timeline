@@ -6,6 +6,7 @@ import {RouteState} from '../../../core/route/state.ts'
 import {EmailVerificationNotFoundError} from '../../../core/domain/user/user.types.ts'
 import assert from 'node:assert'
 import {redirect} from '../../../core/http/redirect.ts'
+import {login, verifyEmail} from '../../../core/route/routes.ts'
 
 const bucket = new ExpiringTokenBucket<string>(5, 60 * 30)
 
@@ -20,7 +21,7 @@ export const handler: Handlers<void, RouteState> = {
 
     const verificationId = getEmailVerificationRequestCookie(req.headers)
     if (!verificationId) {
-      return redirect('/login', 303)
+      return redirect(login, 303)
     }
 
     if (!bucket.consume(user.id, 1)) {
@@ -32,10 +33,10 @@ export const handler: Handlers<void, RouteState> = {
       userService.resendVerificationEmail(user, verificationId)
     } catch (err) {
       if (err instanceof EmailVerificationNotFoundError) {
-        return redirect('/login', 303)
+        return redirect(login, 303)
       }
       throw err
     }
-    return redirect(`/verify-email?resent_to=${encodeURIComponent(user.email)}`, 303)
+    return redirect(verifyEmail + `?resent_to=${encodeURIComponent(user.email)}`, 303)
   },
 }

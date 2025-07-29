@@ -1,4 +1,4 @@
-import {PageProps, Handlers} from '$fresh/server.ts'
+import {Handlers, PageProps} from '$fresh/server.ts'
 import {Container} from '../../../components/Container.tsx'
 import {z, ZodError} from '@zod/zod'
 import {RefillingTokenBucket} from '../../../core/auth/rate-limit.ts'
@@ -13,6 +13,7 @@ import {
 } from '../../../core/domain/user/user.types.ts'
 import {RouteState} from '../../../core/route/state.ts'
 import {redirect} from '../../../core/http/redirect.ts'
+import {login, verifyEmail} from '../../../core/route/routes.ts'
 
 const ipBucket = new RefillingTokenBucket<string>(3, 10)
 
@@ -55,7 +56,7 @@ export const handler: Handlers<SignupState, RouteState> = {
       const headers = new Headers()
       setEmailVerificationRequestCookie(headers, emailVerificationRequest)
       setSessionTokenCookie(headers, sessionToken, session.expiresAt)
-      return redirect('/verify-email', 302, headers)
+      return redirect(verifyEmail, 302, headers)
     } catch (err) {
       if (
         err instanceof EmailAlreadyUsedError ||
@@ -126,7 +127,7 @@ export default function SignUp(props: PageProps<SignupState>) {
         {rateLimitError && <p>{rateLimitError}</p>}
       </form>
       <div>
-        <a href={'/login?email=' + encodeURIComponent(form?.email || '')}>Login</a>
+        <a href={login + '?email=' + encodeURIComponent(form?.email || '')}>Login</a>
       </div>
     </Container>
   )

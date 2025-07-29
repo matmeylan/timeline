@@ -8,6 +8,7 @@ import {UserDoesNotExistError} from '../../../core/domain/user/user.types.ts'
 import {UserService} from '../../../core/domain/user/user.ts'
 import {setPasswordResetSessionTokenCookie} from '../../../core/auth/password.ts'
 import {redirect} from '../../../core/http/redirect.ts'
+import {login, resetPasswordVerifyEmail, signup} from '../../../core/route/routes.ts'
 
 const ipBucket = new RefillingTokenBucket<string>(3, 60)
 const userBucket = new RefillingTokenBucket<string>(3, 60)
@@ -48,7 +49,7 @@ export const handler: Handlers<ForgotPasswordState, RouteState> = {
 
       const headers = new Headers()
       setPasswordResetSessionTokenCookie(headers, sessionToken, session.expiresAt)
-      return redirect('/reset-password/verify-email', 303, headers)
+      return redirect(resetPasswordVerifyEmail, 303, headers)
     } catch (err) {
       if (err instanceof UserDoesNotExistError) {
         return ctx.render({error: err.toZod(), form}, {status: 400})
@@ -81,10 +82,10 @@ export default function ForgotPasswordPage(props: PageProps<ForgotPasswordState>
         {rateLimitError && <p>{rateLimitError}</p>}
       </form>
       <div>
-        <a href={'/login?email=' + encodeURIComponent(form?.email || '')}>Login</a>
+        <a href={login + '?email=' + encodeURIComponent(form?.email || '')}>Login</a>
       </div>
       <div>
-        <a href={'/signup?email=' + encodeURIComponent(form?.email || '')}>Sign up</a>
+        <a href={signup + '?email=' + encodeURIComponent(form?.email || '')}>Sign up</a>
       </div>
     </Container>
   )
