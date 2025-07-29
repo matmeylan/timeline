@@ -10,7 +10,6 @@ export const handler: Handlers = {
     if (!req?.body) {
       return Response.json({error: 'No body found'}, {status: 400})
     }
-    const fileService = new FileService()
     const u = new URL(req.url)
     const params = UploadFileRequest.safeParse({
       size: Number(u.searchParams.get('size')),
@@ -26,6 +25,7 @@ export const handler: Handlers = {
       return Response.json({error: `Max file size is MAX_UPLOAD_SIZE bytes`}, {status: 413})
     }
 
+    const fileService = new FileService()
     const downloadUrl = await fileService.uploadFile({
       fileKey: params.data.fileKey,
       body: req.body,

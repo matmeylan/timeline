@@ -8,6 +8,7 @@ import type {RefObject} from 'npm:@types/react@18.3.20'
 export interface ContentEditorProps {
   content?: string
   inputName: string
+  journalId: string
 }
 
 export default function ContentEditor(props: ContentEditorProps) {
@@ -46,7 +47,7 @@ async function prepareCrepe(root: HTMLDivElement, props: ContentEditorProps, inp
     },
     featureConfigs: {
       [Crepe.Feature.ImageBlock]: {
-        onUpload: (file: File) => startSignedUpload(file),
+        onUpload: (file: File) => startSignedUpload(file, props.journalId),
       },
       [Crepe.Feature.Placeholder]: {
         text: 'What happened ?',
@@ -69,28 +70,28 @@ async function prepareCrepe(root: HTMLDivElement, props: ContentEditorProps, inp
   return crepe
 }
 
-async function startSignedUpload(file: File) {
+async function startSignedUpload(file: File, journalId: string) {
   // TODO: gracefully handle
   if (file.size > MAX_UPLOAD_SIZE) {
     console.warn('File is too large', {file})
     throw new Error('File is too large')
   }
 
-  const {uploadUrl} = await generateUploadSignedUrl(file)
+  const {uploadUrl} = await generateUploadSignedUrl(file, journalId)
   const res = await uploadFile(file, uploadUrl)
 
   console.log('Upload finished !', {res, file})
   return res.downloadUrl
 }
 
-async function generateUploadSignedUrl(file: File): Promise<{uploadUrl: string}> {
+async function generateUploadSignedUrl(file: File, journalId: string): Promise<{uploadUrl: string}> {
   const res = await fetch('/api/files/upload', {
     method: 'POST',
     body: JSON.stringify({
       fileName: file.name,
       size: file.size,
       contentType: file.type,
-      prefix: 'abc',
+      journalId,
     }),
     headers: {
       'Content-Type': 'application/json',

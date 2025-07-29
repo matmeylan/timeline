@@ -63,7 +63,7 @@ export default function EditEntryPage(props: PageProps<EditEntryState>) {
           </header>
           <form method="post" class="mt-8 flex flex-1 flex-col gap-1">
             <input type="hidden" value="text/markdown" id="contentType" name="contentType" />
-            <ContentEditor inputName="content" content={form?.content} />
+            <ContentEditor inputName="content" content={form?.content} journalId={journal.id} />
             <div class="text-red-500">{errors?.fieldErrors.content}</div>
             <div class="text-red-500">{errors?.fieldErrors.contentType}</div>
             <div class="flex flex-row items-center justify-center">

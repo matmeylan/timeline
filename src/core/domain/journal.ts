@@ -63,6 +63,15 @@ export class JournalService {
     return journal
   }
 
+  getJournalById(id: string): Journal {
+    const stmt = this.client.db.prepare(`SELECT * FROM journal where id = :id`)
+    const journal = stmt.get<Journal>({id})
+    if (!journal) {
+      throw new JournalNotFoundError(id)
+    }
+    return journal
+  }
+
   writeEntry(journalId: string, createEntry: WriteJournalEntry): JournalEntry {
     const entry: JournalEntry = {
       id: crypto.randomUUID(),
