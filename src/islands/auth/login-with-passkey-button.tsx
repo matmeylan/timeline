@@ -2,6 +2,8 @@ import {decodeBase64, encodeBase64} from '@oslojs/encoding'
 import z from '@zod/zod'
 import {useSignal} from '@preact/signals'
 import {home, loginViaPasskey} from '../../core/route/routes.ts'
+import {Button} from '../../components/Button.tsx'
+import {PasskeyIcon} from '../../components/icons.tsx'
 
 export default function LoginWithPasskeyButton() {
   const error = useSignal('')
@@ -15,10 +17,15 @@ export default function LoginWithPasskeyButton() {
 
   return (
     <div>
-      <button type="button" onClick={clickHandler}>
-        Login with passkey
-      </button>
-      {error.value && <div class="mt-2">{error.value}</div>}
+      <Button variant="secondary" type="button" class="w-full" onClick={clickHandler}>
+        <PasskeyIcon />
+        Login with Passkey
+      </Button>
+      {error.value && (
+        <div class="mt-4 rounded-md bg-red-50 p-4">
+          <p class="text-sm text-red-800">{error.value}</p>
+        </div>
+      )}
     </div>
   )
 }

@@ -3,7 +3,7 @@ import {Container} from './Container.tsx'
 import {clsx} from '@nick/clsx'
 import {JSX} from 'preact'
 import {asset} from '$fresh/runtime.ts'
-import {home, userHome, login, signup, startJournal} from '../core/route/routes.ts'
+import {home, userHome, login, signup, startJournal, settingsProfile} from '../core/route/routes.ts'
 import type {User} from '../core/domain/user/user.types.ts'
 
 export function Header({user}: {user: User | undefined}) {
@@ -11,7 +11,7 @@ export function Header({user}: {user: User | undefined}) {
   return (
     <>
       <header
-        class="pointer-events-none relative z-50 flex flex-none flex-col"
+        class="pointer-events-none absolute z-50 flex w-full flex-none flex-col"
         style={{
           height: 'var(--header-height)',
           marginBottom: 'var(--header-mb)',
@@ -31,12 +31,8 @@ export function Header({user}: {user: User | undefined}) {
             }}
           >
             <div class="relative flex gap-4">
-              <div class="flex flex-1">
-                <AvatarContainer>
-                  <Avatar />
-                </AvatarContainer>
-              </div>
-              <div class="flex flex-1 justify-end md:justify-center">
+              <div class="flex flex-1"></div>
+              <div class="flex flex-1 basis-1/3 justify-end md:justify-center">
                 <DesktopNavigation class="pointer-events-auto" user={user} />
               </div>
               <div class="flex justify-end md:flex-1">
@@ -94,14 +90,14 @@ function Avatar({
 
 function DesktopNavigation(props: JSX.IntrinsicElements['nav'] & {user: User | undefined}) {
   const user = props.user
-  const start = user ? startJournal(user.username) : login
+  const start = user ? startJournal(user.username) : signup
   return (
     <nav {...props}>
       <ul class="flex rounded-full bg-white/90 px-3 text-sm font-medium text-zinc-800 shadow-lg ring-1 shadow-zinc-800/5 ring-zinc-900/5 backdrop-blur-sm dark:bg-zinc-800/90 dark:text-zinc-200 dark:ring-white/10">
         <NavItem href={home}>Home</NavItem>
         <NavItem href={start}>Start</NavItem>
         {user && <NavItem href={userHome(user.username)}>Journals</NavItem>}
-        {!user && <NavItem href={signup}>Sign up</NavItem>}
+        {user && <NavItem href={settingsProfile}>Settings</NavItem>}
       </ul>
     </nav>
   )

@@ -18,3 +18,16 @@
     border-color: var(--color-gray-200, currentcolor);
   }
 }
+
+@theme {
+    /* TODO: review colors and dark mode... */
+    --color-background: oklch(1 0 0);
+    --color-primary: var(--color-teal-500);
+    --color-primary-foreground: oklch(0.985 0 0);
+    --color-secondary: oklch(0.97 0 0);
+    --color-secondary-foreground: var(--color-teal-500);
+    --color-accent: oklch(0.97 0 0);
+    --color-accent-foreground: var(--color-teal-500);
+    --color-destructive: var(--color-red-600);
+    --color-destructive-foreground: var(--color-red-50);
+}

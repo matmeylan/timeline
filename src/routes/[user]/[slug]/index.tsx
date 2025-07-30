@@ -11,6 +11,7 @@ import {Button} from '../../../components/Button.tsx'
 import {User} from '../../../core/domain/user/user.types.ts'
 import {editJournalEntry, userHome, writeJournalEntry} from '../../../core/route/routes.ts'
 import {JournalRouteState} from './_middleware.ts'
+import {Link} from '../../../components/Link.tsx'
 
 export const handler: Handlers<JournalState, JournalRouteState> = {
   async GET(req, ctx) {
@@ -76,14 +77,15 @@ function JournalLayout(props: PageProps<JournalState> & {children: ComponentChil
                 Started on {createdAt}
               </time>
               <div class="col-span-1 row-span-2 self-center">
-                <Button.Primary
+                <Button
                   as="a"
                   href={writeJournalEntry(user.username, journal.slug)}
                   aria-label="Write"
-                  icon={<WriteIcon />}
+                  variant="outline"
                 >
                   Write
-                </Button.Primary>
+                  <WriteIcon />
+                </Button>
               </div>
             </header>
           </section>
@@ -100,9 +102,9 @@ function JournalTimeline(props: JournalState) {
     return (
       <>
         <em class="block">Your entries will appear here!</em>
-        <a class="mt-2" href={writeJournalEntry(user.username, journal.slug)}>
+        <Link class="mt-2" href={writeJournalEntry(user.username, journal.slug)}>
           Write your first entry
-        </a>
+        </Link>
       </>
     )
   } else {
@@ -135,12 +137,14 @@ function JournalEntry({
   user: User
 }) {
   return (
-    <article class="group md:grid md:grid-cols-4 md:items-start" id={entry.id}>
-      <div class="flex flex-col gap-4">
+    <article class="group gap-2 md:grid md:grid-cols-4 md:items-start" id={entry.id}>
+      <div class="inline-flex flex-col gap-1">
         <time class="text-sm text-zinc-400 dark:text-zinc-500">{date.format(new Date(entry.createdAt))}</time>
-        <Button.Secondary as="a" href={editJournalEntry(user.username, journal.slug, entry.id)}>
-          Edit
-        </Button.Secondary>
+        <div>
+          <Link href={editJournalEntry(user.username, journal.slug, entry.id)} class="text-sm">
+            Edit
+          </Link>
+        </div>
       </div>
       <div class="md:col-span-3">
         <Prose dangerouslySetInnerHTML={{__html: entry.htmlContent}} />

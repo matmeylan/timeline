@@ -32,6 +32,7 @@
     "@std/path": "jsr:@std/path@^1.0.6",
     "@tailwindcss/typography": "npm:@tailwindcss/typography@^0.5.15",
     "@zod/zod": "jsr:@zod/zod@^4.0.5",
+    "class-variance-authority": "npm:class-variance-authority@^0.7.1",
     "preact": "https://esm.sh/preact@10.22.0",
     "preact/": "https://esm.sh/preact@10.22.0/",
     "prosemirror-model": "npm:prosemirror-model@1.25.1",

@@ -67,9 +67,9 @@ export default function EditEntryPage(props: PageProps<EditEntryState>) {
             <div class="text-red-500">{errors?.fieldErrors.content}</div>
             <div class="text-red-500">{errors?.fieldErrors.contentType}</div>
             <div class="flex flex-row items-center justify-center">
-              <Button.Hero type="submit" aria-label="Edit">
+              <Button type="submit" aria-label="Edit">
                 Edit
-              </Button.Hero>
+              </Button>
             </div>
           </form>
         </div>

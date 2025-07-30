@@ -1,5 +1,4 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
-import {Container} from '../../../components/Container.tsx'
 import {z, ZodError} from '@zod/zod'
 import {RefillingTokenBucket} from '../../../core/auth/rate-limit.ts'
 import {UserService} from '../../../core/domain/user/user.ts'
@@ -15,6 +14,9 @@ import {
 import {redirect} from '../../../core/http/redirect.ts'
 import {login, verifyEmail} from '../../../core/route/routes.ts'
 import {RouteState} from '../../_middleware.ts'
+import {Description, Error, FormField, Input, Label} from '../../../components/form/FormField.tsx'
+import {Button} from '../../../components/Button.tsx'
+import {Link} from '../../../components/Link.tsx'
 
 const ipBucket = new RefillingTokenBucket<string>(3, 10)
 
@@ -77,61 +79,93 @@ export default function SignUp(props: PageProps<SignupState>) {
   const errors = error ? z.flattenError(error) : undefined
 
   return (
-    <Container class="mt-16 lg:mt-32">
-      <h1 class="text-4xl font-bold">Create an account</h1>
-      <form method="post" class="mt-4 inline-flex flex-col gap-1">
-        <label for="form-signup.name">Name</label>
-        <input
-          type="text"
-          id="form-signup.name"
-          name="name"
-          autocomplete="name"
-          required
-          value={form?.name ?? ''}
-          class="border border-teal-500"
-        />
-        <div>{errors?.fieldErrors.name}</div>
-        <label for="form-signup.email">Email</label>
-        <input
-          type="email"
-          id="form-signup.email"
-          name="email"
-          autocomplete="email"
-          required
-          value={form?.email ?? ''}
-          class="border border-teal-500"
-        />
-        <div>{errors?.fieldErrors.email}</div>
-        <label for="form-signup.password">Password</label>
-        <input
-          type="password"
-          id="form-signup.password"
-          name="password"
-          autocomplete="new-password"
-          required
-          value={form?.password ?? ''}
-          class="border border-teal-500"
-        />
-        <div>{errors?.fieldErrors.password}</div>
-        <label for="form-signup.username">Username</label>
-        <input
-          type="text"
-          id="form-signup.username"
-          name="username"
-          autocomplete="username"
-          required
-          value={form?.username ?? ''}
-          class="border border-teal-500"
-        />
-        <p>Your username is your unique handle that identifies you on the platform.</p>
-        {errors?.fieldErrors.username && <div>{errors?.fieldErrors.username}</div>}
-        <button type="submit">Sign up</button>
-        {rateLimitError && <p>{rateLimitError}</p>}
-      </form>
-      <div>
-        <a href={login + '?email=' + encodeURIComponent(form?.email || '')}>Login</a>
+    <div class="space-y-6">
+      <div class="text-center">
+        <h1 class="text-3xl font-bold text-gray-900">Start writing now</h1>
+        <p class="mt-2 text-sm text-gray-600">Sign up and get started on your first journal.</p>
       </div>
-    </Container>
+
+      <form method="post">
+        <div class="flex flex-col gap-4">
+          <FormField>
+            <Label for="form-signup.name">Your Name</Label>
+            <Input
+              type="text"
+              id="form-signup.name"
+              name="name"
+              autocomplete="name"
+              required
+              value={form?.name ?? ''}
+              placeholder="Enter your name"
+              class="w-full"
+            />
+            {errors?.fieldErrors.name && <Error>{errors.fieldErrors.name}</Error>}
+          </FormField>
+          <FormField>
+            <Label for="form-signup.email">Email</Label>
+            <Input
+              type="email"
+              id="form-signup.email"
+              name="email"
+              autocomplete="username email"
+              required
+              value={form?.email ?? ''}
+              placeholder="Enter your email"
+              class="w-full"
+            />
+            <Description>You'll use that to sign in. Your email won't be visible anywhere.</Description>
+            {errors?.fieldErrors.email && <Error>{errors.fieldErrors.email}</Error>}
+          </FormField>
+          <FormField>
+            <Label for="form-signup.password">Password</Label>
+            <Input
+              type="password"
+              id="form-signup.password"
+              name="password"
+              autocomplete="new-password"
+              required
+              value={form?.password ?? ''}
+              placeholder="Create a strong password"
+              class="w-full"
+            />
+            {errors?.fieldErrors.password && <Error>{errors.fieldErrors.password}</Error>}
+          </FormField>
+          <FormField>
+            <Label for="form-signup.username">Username</Label>
+            <Input
+              type="text"
+              id="form-signup.username"
+              name="username"
+              autocomplete="nickname"
+              required
+              value={form?.username ?? ''}
+              placeholder="Choose a username"
+              class="w-full"
+            />
+            <Description>
+              Your unique handle that identifies you. Your journals will live under your handle.
+            </Description>
+            {errors?.fieldErrors.username && <Error>{errors.fieldErrors.username}</Error>}
+          </FormField>
+        </div>
+
+        {rateLimitError && (
+          <div class="mt-4 rounded-md bg-red-50 p-4">
+            <p class="text-sm text-red-800">{rateLimitError}</p>
+          </div>
+        )}
+
+        <Button type="submit" class="mt-4 w-full">
+          Create Account
+        </Button>
+      </form>
+
+      <div class="text-center">
+        <p class="text-sm text-gray-600">
+          Already have an account? <Link href={login + '?email=' + encodeURIComponent(form?.email || '')}>Sign in</Link>
+        </p>
+      </div>
+    </div>
   )
 }
 

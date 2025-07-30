@@ -8,12 +8,17 @@ import * as $_auth_any_reset_password_verify_email from "./routes/(auth)/(any)/r
 import * as $_auth_authenticated_2fa_passkey from "./routes/(auth)/(authenticated)/2fa/passkey.tsx";
 import * as $_auth_authenticated_middleware from "./routes/(auth)/(authenticated)/_middleware.ts";
 import * as $_auth_authenticated_logout from "./routes/(auth)/(authenticated)/logout.tsx";
+import * as $_auth_authenticated_settings_layout from "./routes/(auth)/(authenticated)/settings/_layout.tsx";
+import * as $_auth_authenticated_settings_index from "./routes/(auth)/(authenticated)/settings/index.tsx";
+import * as $_auth_authenticated_settings_profile from "./routes/(auth)/(authenticated)/settings/profile.tsx";
+import * as $_auth_authenticated_settings_security from "./routes/(auth)/(authenticated)/settings/security.tsx";
 import * as $_auth_authenticated_verify_email_resend from "./routes/(auth)/(authenticated)/verify-email-resend.ts";
 import * as $_auth_authenticated_verify_email from "./routes/(auth)/(authenticated)/verify-email.tsx";
 import * as $_auth_guest_middleware from "./routes/(auth)/(guest)/_middleware.ts";
 import * as $_auth_guest_login from "./routes/(auth)/(guest)/login.tsx";
 import * as $_auth_guest_login_passkey from "./routes/(auth)/(guest)/login/passkey.ts";
 import * as $_auth_guest_signup from "./routes/(auth)/(guest)/signup.tsx";
+import * as $_auth_layout from "./routes/(auth)/_layout.tsx";
 import * as $_user_slug_middleware from "./routes/[user]/[slug]/_middleware.ts";
 import * as $_user_slug_edit_entry_ from "./routes/[user]/[slug]/edit/[entry].tsx";
 import * as $_user_slug_index from "./routes/[user]/[slug]/index.tsx";
@@ -48,6 +53,14 @@ const manifest = {
     "./routes/(auth)/(authenticated)/_middleware.ts":
       $_auth_authenticated_middleware,
     "./routes/(auth)/(authenticated)/logout.tsx": $_auth_authenticated_logout,
+    "./routes/(auth)/(authenticated)/settings/_layout.tsx":
+      $_auth_authenticated_settings_layout,
+    "./routes/(auth)/(authenticated)/settings/index.tsx":
+      $_auth_authenticated_settings_index,
+    "./routes/(auth)/(authenticated)/settings/profile.tsx":
+      $_auth_authenticated_settings_profile,
+    "./routes/(auth)/(authenticated)/settings/security.tsx":
+      $_auth_authenticated_settings_security,
     "./routes/(auth)/(authenticated)/verify-email-resend.ts":
       $_auth_authenticated_verify_email_resend,
     "./routes/(auth)/(authenticated)/verify-email.tsx":
@@ -56,6 +69,7 @@ const manifest = {
     "./routes/(auth)/(guest)/login.tsx": $_auth_guest_login,
     "./routes/(auth)/(guest)/login/passkey.ts": $_auth_guest_login_passkey,
     "./routes/(auth)/(guest)/signup.tsx": $_auth_guest_signup,
+    "./routes/(auth)/_layout.tsx": $_auth_layout,
     "./routes/[user]/[slug]/_middleware.ts": $_user_slug_middleware,
     "./routes/[user]/[slug]/edit/[entry].tsx": $_user_slug_edit_entry_,
     "./routes/[user]/[slug]/index.tsx": $_user_slug_index,

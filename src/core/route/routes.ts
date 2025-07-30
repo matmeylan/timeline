@@ -13,6 +13,9 @@ export const verifyEmailResend = '/verify-email-resend' as const
 export const forgotPassword = '/forgot-password' as const
 export const resetPassword = '/reset-password' as const
 export const resetPasswordVerifyEmail = '/reset-password/verify-email' as const
+export const settingsSecurity = '/settings/security' as const
+export const settingsProfile = '/settings/profile' as const
+
 /** /:user/ */
 /** JOURNAL */
 export const userHome = (user: string) => `/${user}`
@@ -29,12 +32,13 @@ const Routes = [
   login,
   loginViaPasskey,
   logout,
-  twoFaPasskey,
   verifyEmail,
   verifyEmailResend,
   forgotPassword,
   resetPassword,
   resetPasswordVerifyEmail,
+  settingsSecurity,
+  settingsProfile,
 ]
 
 /** All static reserved routes of the application wired on the user '/[:user]/' */

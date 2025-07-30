@@ -1,5 +1,6 @@
 import {Head} from '$fresh/runtime.ts'
 import {Container} from '../components/Container.tsx'
+import {Link} from '../components/Link.tsx'
 
 export default function Error404() {
   return (
@@ -17,9 +18,7 @@ export default function Error404() {
         />
         <h1 class="text-4xl font-bold">404 - Page not found</h1>
         <p class="my-4">The page you were looking for doesn't exist.</p>
-        <a href="/" class="underline">
-          Go back home
-        </a>
+        <Link href="/">Go back home</Link>
       </Container>
     </>
   )

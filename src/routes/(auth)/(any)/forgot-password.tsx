@@ -1,6 +1,5 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
 import z, {ZodError} from '@zod/zod'
-import {Container} from '../../../components/Container.tsx'
 import {RefillingTokenBucket} from '../../../core/auth/rate-limit.ts'
 import {EMAIL_VALIDATION_PATTERN} from '../../../core/serde/email.ts'
 import {UserDoesNotExistError} from '../../../core/domain/user/user.types.ts'
@@ -9,6 +8,10 @@ import {setPasswordResetSessionTokenCookie} from '../../../core/auth/password.ts
 import {redirect} from '../../../core/http/redirect.ts'
 import {login, resetPasswordVerifyEmail, signup} from '../../../core/route/routes.ts'
 import {RouteState} from '../../_middleware.ts'
+import {Button} from '../../../components/Button.tsx'
+import {Error, FormField, Input, Label} from '../../../components/form/FormField.tsx'
+import {Link} from '../../../components/Link.tsx'
+import {KeyIcon} from '../../../components/icons.tsx'
 
 const ipBucket = new RefillingTokenBucket<string>(3, 60)
 const userBucket = new RefillingTokenBucket<string>(3, 60)
@@ -64,30 +67,54 @@ export default function ForgotPasswordPage(props: PageProps<ForgotPasswordState>
   const errors = error ? z.flattenError(error) : undefined
 
   return (
-    <Container class="mt-16 lg:mt-32">
-      <h1 class="text-4xl font-bold">Forgot your password ?</h1>
-      <form method="post" class="mt-4 inline-flex flex-col gap-1">
-        <label for="email">Email</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          autocomplete="username"
-          required
-          value={form?.email ?? ''}
-          class="border border-teal-500"
-        />
-        <div>{errors?.fieldErrors.email}</div>
-        <button type="submit">Send reset link</button>
-        {rateLimitError && <p>{rateLimitError}</p>}
+    <div class="space-y-6">
+      <div class="text-center">
+        <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-teal-100">
+          <KeyIcon class="h-8 w-8 fill-teal-600" />
+        </div>
+        <h1 class="text-3xl font-bold text-gray-900">Forgot your password?</h1>
+        <p class="mt-2 text-sm text-gray-600">
+          Enter your email address and we'll send you a link to reset your password
+        </p>
+      </div>
+
+      <form method="post">
+        <FormField>
+          <Label for="email">Email Address</Label>
+          <Input
+            type="email"
+            id="email"
+            name="email"
+            autocomplete="username"
+            required
+            value={form?.email ?? ''}
+            class="w-full"
+            placeholder="Enter your email"
+          />
+          {errors?.fieldErrors.email && <Error>{errors.fieldErrors.email}</Error>}
+        </FormField>
+
+        {rateLimitError && (
+          <div class="mt-4 rounded-md bg-red-50 p-4">
+            <p class="text-sm text-red-800">{rateLimitError}</p>
+          </div>
+        )}
+
+        <Button type="submit" class="mt-4 w-full">
+          Send Reset Link
+        </Button>
       </form>
-      <div>
-        <a href={login + '?email=' + encodeURIComponent(form?.email || '')}>Login</a>
-      </div>
-      <div>
-        <a href={signup + '?email=' + encodeURIComponent(form?.email || '')}>Sign up</a>
-      </div>
-    </Container>
+
+      <section class="text-sm text-gray-600">
+        <p>
+          Don't have an account? <Link href={signup + '?email=' + encodeURIComponent(form?.email || '')}>Sign up</Link>
+        </p>
+        <p>
+          Remember your password?{' '}
+          <Link href={login + '?email=' + encodeURIComponent(form?.email || '')}>Back to Sign In</Link>
+        </p>
+      </section>
+    </div>
   )
 }
 

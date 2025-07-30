@@ -6,10 +6,12 @@ import {setSessionTokenCookie} from '../../../core/auth/session.ts'
 import {redirect} from '../../../core/http/redirect.ts'
 import {forgotPassword, userHome, signup, verifyEmail} from '../../../core/route/routes.ts'
 import {InvalidPasswordError, UserDoesNotExistError} from '../../../core/domain/user/user.types.ts'
-import {Container} from '../../../components/Container.tsx'
 import LoginWithPasskeyButton from '../../../islands/auth/login-with-passkey-button.tsx'
 import {EMAIL_VALIDATION_PATTERN} from '../../../core/serde/email.ts'
 import {RouteState} from '../../_middleware.ts'
+import {Error, FormField, Input, Label} from '../../../components/form/FormField.tsx'
+import {Link} from '../../../components/Link.tsx'
+import {Button} from '../../../components/Button.tsx'
 
 const throttler = new Throttler<string>([0, 1, 2, 4, 8, 16, 30, 60, 180, 300])
 const ipBucket = new RefillingTokenBucket<string>(20, 1)
@@ -74,44 +76,76 @@ export default function LoginPage(props: PageProps<LoginState>) {
   const errors = error ? z.flattenError(error) : undefined
 
   return (
-    <Container class="mt-16 lg:mt-32">
-      <h1 class="text-4xl font-bold">Login</h1>
-      <form method="post" class="mt-4 inline-flex flex-col gap-1">
-        <label for="form-signup.email">Email</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          autocomplete="username"
-          required
-          value={form?.email ?? ''}
-          class="border border-teal-500"
-        />
-        <div>{errors?.fieldErrors.email}</div>
-        <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          autocomplete="current-password"
-          required
-          value={form?.password ?? ''}
-          class="border border-teal-500"
-        />
-        <div>{errors?.fieldErrors.password}</div>
-        <button type="submit">Login</button>
-        {rateLimitError && <p>{rateLimitError}</p>}
+    <div class="space-y-6">
+      <div class="text-center">
+        <h1 class="text-3xl font-bold text-gray-900">Welcome back</h1>
+        <p class="mt-2 text-sm text-gray-600">Sign in to your account to continue</p>
+      </div>
+
+      <form method="post">
+        <div class="flex flex-col gap-4">
+          <FormField>
+            <Label for="email">Email Address</Label>
+            <Input
+              type="email"
+              id="email"
+              name="email"
+              autocomplete="username"
+              required
+              value={form?.email ?? ''}
+              class="w-full"
+              placeholder="Enter your email"
+            />
+            {errors?.fieldErrors.email && <Error>{errors.fieldErrors.email}</Error>}
+          </FormField>
+          <FormField>
+            <Label for="password">Password</Label>
+            <Input
+              type="password"
+              id="password"
+              name="password"
+              autocomplete="current-password"
+              required
+              value={form?.password ?? ''}
+              class="w-full"
+              placeholder="Enter your password"
+            />
+            {errors?.fieldErrors.password && <Error>{errors.fieldErrors.password}</Error>}
+          </FormField>
+
+          <div class="flex items-center justify-end text-sm">
+            <Link href={forgotPassword + '?email=' + encodeURIComponent(form?.email || '')}>Forgot your password?</Link>
+          </div>
+        </div>
+
+        {rateLimitError && (
+          <div class="rounded-md bg-red-50 p-4">
+            <p class="text-sm text-red-800">{rateLimitError}</p>
+          </div>
+        )}
+
+        <Button type="submit" class="mt-4 w-full">
+          Sign In
+        </Button>
       </form>
-      <div>
-        <LoginWithPasskeyButton />
+
+      <div class="relative">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gray-300" />
+        </div>
+        <div class="relative flex justify-center text-sm">
+          <span class="bg-white px-2 text-gray-500">or continue with</span>
+        </div>
       </div>
-      <div>
-        <a href={forgotPassword + '?email=' + encodeURIComponent(form?.email || '')}>Forgot password</a>
+
+      <LoginWithPasskeyButton />
+
+      <div class="text-center">
+        <p class="text-sm text-gray-600">
+          Don't have an account? <Link href={signup + '?email=' + encodeURIComponent(form?.email || '')}>Sign up</Link>
+        </p>
       </div>
-      <div>
-        <a href={signup + '?email=' + encodeURIComponent(form?.email || '')}>Sign up</a>
-      </div>
-    </Container>
+    </div>
   )
 }
 

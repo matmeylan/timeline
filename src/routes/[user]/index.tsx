@@ -5,6 +5,7 @@ import {Container} from '../../components/Container.tsx'
 import {journal, startJournal} from '../../core/route/routes.ts'
 import {User} from '../../core/domain/user/user.types.ts'
 import {AuthenticatedRouteState} from './_middleware.ts'
+import {Link} from '../../components/Link.tsx'
 
 export const handler: Handlers<JournalIndexState, AuthenticatedRouteState> = {
   GET(req, ctx) {
@@ -32,19 +33,19 @@ function MyJournals(props: {journals: Journal[]; user: User}) {
     return (
       <>
         <p class="italic">No journal yet</p>
-        <a class="mt-4" href={startJournal(props.user.username)}>
+        <Link class="mt-4" href={startJournal(props.user.username)}>
           Start a journal
-        </a>
+        </Link>
       </>
     )
   }
   return (
     <>
-      <a href={startJournal(props.user.username)}>Start a journal</a>
+      <Link href={startJournal(props.user.username)}>Start a journal</Link>
       <ul class="mt-4">
         {journals.map(t => (
           <li>
-            <a href={journal(user.username, t.slug)}>{t.title}</a>
+            <Link href={journal(user.username, t.slug)}>{t.title}</Link>
           </li>
         ))}
       </ul>

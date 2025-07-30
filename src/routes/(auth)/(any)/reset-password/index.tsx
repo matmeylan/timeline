@@ -1,6 +1,5 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
 import z, {ZodError} from '@zod/zod'
-import {Container} from '../../../../components/Container.tsx'
 import {
   deletePasswordResetSessionTokenCookie,
   getPasswordResetSessionTokenCookie,
@@ -11,6 +10,9 @@ import {setSessionTokenCookie} from '../../../../core/auth/session.ts'
 import {redirect} from '../../../../core/http/redirect.ts'
 import {forgotPassword, home, resetPasswordVerifyEmail} from '../../../../core/route/routes.ts'
 import {RouteState} from '../../../_middleware.ts'
+import {Button} from '../../../../components/Button.tsx'
+import {Error, FormField, Input, Label} from '../../../../components/form/FormField.tsx'
+import {KeyIcon} from '../../../../components/icons.tsx'
 
 export const handler: Handlers<ResetPasswordState, RouteState> = {
   GET(req, ctx) {
@@ -71,23 +73,41 @@ export default function ResetPasswordPage(props: PageProps<ResetPasswordState>) 
   const errors = error ? z.flattenError(error) : undefined
 
   return (
-    <Container class="mt-16 lg:mt-32">
-      <h1 class="text-4xl font-bold">Reset your password</h1>
-      <form method="post" class="mt-4 inline-flex flex-col gap-1">
-        <label for="form-signup.password">New password</label>
-        <input
-          type="password"
-          id="form-signup.password"
-          name="password"
-          autocomplete="new-password"
-          required
-          class="border border-teal-500"
-        />
-        <div>{errors?.fieldErrors.password}</div>
-        <button type="submit">Set new password</button>
-        {rateLimitError && <p>{rateLimitError}</p>}
+    <div class="space-y-6">
+      <div class="text-center">
+        <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-teal-100">
+          <KeyIcon class="h-8 w-8 fill-teal-600" />
+        </div>
+        <h1 class="text-3xl font-bold text-gray-900">Set new password</h1>
+        <p class="mt-2 text-sm text-gray-600">Choose a strong password for your account</p>
+      </div>
+
+      <form method="post">
+        <FormField>
+          <Label for="password">New Password</Label>
+          <Input
+            type="password"
+            id="password"
+            name="password"
+            autocomplete="new-password"
+            required
+            class="w-full"
+            placeholder="Enter your new password"
+          />
+          {errors?.fieldErrors.password && <Error>{errors.fieldErrors.password}</Error>}
+        </FormField>
+
+        {rateLimitError && (
+          <div class="mt-4 rounded-md bg-red-50 p-4">
+            <p class="text-sm text-red-800">{rateLimitError}</p>
+          </div>
+        )}
+
+        <Button type="submit" class="mt-4 w-full">
+          Set New Password
+        </Button>
       </form>
-    </Container>
+    </div>
   )
 }
 

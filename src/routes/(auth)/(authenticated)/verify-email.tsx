@@ -1,5 +1,4 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
-import {Container} from '../../../components/Container.tsx'
 import {
   deleteEmailVerificationCookie,
   getEmailVerificationRequestCookie,
@@ -16,6 +15,9 @@ import assert from 'node:assert'
 import {redirect} from '../../../core/http/redirect.ts'
 import {home, startJournal, verifyEmailResend} from '../../../core/route/routes.ts'
 import {RouteState} from '../../_middleware.ts'
+import {Button} from '../../../components/Button.tsx'
+import {Error, FormField, Input, Label} from '../../../components/form/FormField.tsx'
+import {UnreadEmailIcon} from '../../../components/icons.tsx'
 
 const bucket = new ExpiringTokenBucket<string>(5, 60 * 30)
 
@@ -98,26 +100,62 @@ export const handler: Handlers<VerifyEmailState, RouteState> = {
 export default function VerifyEmailPage(props: PageProps<VerifyEmailState>) {
   const {email, error, rateLimitError, resentTo} = props.data
   return (
-    <Container class="mt-16 lg:mt-32">
-      <h1 class="text-4xl font-bold">Verify your email</h1>
-      <p>Check your email! We've sent a code to you on "{email}"</p>
-      <form method="post" class="mt-4 inline-flex flex-col gap-1">
-        <label for="form-verify.code">Code</label>
-        <input id="form-verify.code" name="code" required class="border border-teal-500" />
-        {error && <div>{error}</div>}
-        <button type="submit">Verify</button>
-        {rateLimitError && <p>{rateLimitError}</p>}
+    <div class="space-y-6">
+      <div class="text-center">
+        <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-teal-100">
+          <UnreadEmailIcon class="h-8 w-8 fill-teal-600" />
+        </div>
+        <h1 class="text-3xl font-bold text-gray-900">Verify your email</h1>
+        <p class="mt-2 text-sm text-gray-600">
+          We've sent a verification code to <span class="font-medium">{email}</span>
+        </p>
+      </div>
+
+      <form method="post">
+        <FormField>
+          <Label for="code">Verification Code</Label>
+          <Input
+            type="text"
+            id="code"
+            name="code"
+            required
+            class="w-full text-center tracking-widest"
+            placeholder="Enter verification code"
+            autocomplete="one-time-code"
+          />
+          {error && <Error>{error}</Error>}
+        </FormField>
+
+        {rateLimitError && (
+          <div class="mt-4 rounded-md bg-red-50 p-4">
+            <p class="text-sm text-red-800">{rateLimitError}</p>
+          </div>
+        )}
+
+        <Button type="submit" class="mt-4 w-full">
+          Verify Email
+        </Button>
       </form>
-      <div class="mt-4">
+
+      <div class="text-center">
         {resentTo ? (
-          <p>A code has been resent to {resentTo}</p>
+          <div class="rounded-md bg-green-50 p-4">
+            <p class="text-sm text-green-800">
+              A new verification code has been sent to <span class="font-medium">{resentTo}</span>
+            </p>
+          </div>
         ) : (
-          <form method="post" action={verifyEmailResend}>
-            <button type="submit">Resend code</button>
-          </form>
+          <div class="space-y-1">
+            <p class="text-sm text-gray-600">Didn't receive the code?</p>
+            <form method="post" action={verifyEmailResend} class="inline">
+              <Button type="submit" variant="ghost" size="sm">
+                Resend verification code
+              </Button>
+            </form>
+          </div>
         )}
       </div>
-    </Container>
+    </div>
   )
 }
 

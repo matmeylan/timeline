@@ -1,8 +1,9 @@
 import {decodeBase64, encodeBase64} from '@oslojs/encoding'
 import z from '@zod/zod'
+import {Button} from '../../components/Button.tsx'
 
 export default function RegisterPasskeyButton() {
-  const handleCreatePasskey = () => {
+  const handleCreatePasskey = (): void => {
     generatePasskey().then(res => {
       // we use a HTML form to use form submission by the browser, follow redirections, etc...
       const form = document.createElement('form')
@@ -33,11 +34,10 @@ export default function RegisterPasskeyButton() {
   }
 
   return (
-    <>
-      <button type="button" onClick={handleCreatePasskey}>
-        Create passkey
-      </button>
-    </>
+    <Button onClick={handleCreatePasskey} variant="outline" class="w-full">
+      <AddPasskeyIcon />
+      Add new passkey
+    </Button>
   )
 }
 
@@ -114,3 +114,12 @@ const WebAuthnChallengeResponseSchema = z.object({
   credentialUserId: z.base64(),
   credentialIds: z.array(z.base64()),
 })
+
+function AddPasskeyIcon() {
+  // <!--!Font Awesome Free v7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+      <path d="M352 128C352 110.3 337.7 96 320 96C302.3 96 288 110.3 288 128L288 288L128 288C110.3 288 96 302.3 96 320C96 337.7 110.3 352 128 352L288 352L288 512C288 529.7 302.3 544 320 544C337.7 544 352 529.7 352 512L352 352L512 352C529.7 352 544 337.7 544 320C544 302.3 529.7 288 512 288L352 288L352 128z" />
+    </svg>
+  )
+}
