@@ -104,24 +104,21 @@ async function generateUploadSignedUrl(file: File, journalId: string): Promise<{
   }
 }
 
-function uploadFile(file: File, signedUrl: string): Promise<{downloadUrl: string}> {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest()
-    xhr.open('PUT', signedUrl, true)
-    xhr.setRequestHeader('Content-Type', file.type)
-    xhr.addEventListener('loadend', event => {
-      if (xhr.status == 200) {
-        return resolve(JSON.parse(xhr.responseText))
-      } else {
-        return reject(new FileUploadError(`${xhr.status} ${xhr.statusText}: ${xhr.responseText}`))
-      }
-    })
-    xhr.addEventListener('timeout', event => {
-      return reject(new FileUploadError(`File upload timed out`))
-    })
-
-    xhr.send(file)
+async function uploadFile(file: File, signedUrl: string): Promise<{downloadUrl: string}> {
+  const response = await fetch(signedUrl, {
+    method: 'PUT',
+    body: file,
+    headers: {
+      'Content-Type': file.type,
+    },
   })
+
+  if (response.ok) {
+    return await response.json()
+  } else {
+    const errorText = await response.text()
+    throw new FileUploadError(`${response.status} ${response.statusText}: ${errorText}`)
+  }
 }
 
 export class FileUploadError extends Error {}
