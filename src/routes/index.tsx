@@ -1,7 +1,7 @@
 import {Handlers, PageProps} from '$fresh/server.ts'
 import {Container} from '../components/Container.tsx'
 import {User} from '../core/domain/user/user.types.ts'
-import {userHome, login, logout, signup, startJournal, settingsSecurity} from '../core/route/routes.ts'
+import {login, logout, settingsSecurity, signup, startJournal, userHome} from '../core/route/routes.ts'
 import {RouteState} from './_middleware.ts'
 import {Link} from '../components/Link.tsx'
 

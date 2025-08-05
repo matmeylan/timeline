@@ -1,10 +1,6 @@
-import {PageProps, RouteConfig} from '$fresh/server.ts'
+import {PageProps} from '$fresh/server.ts'
 import {Header} from '../components/Header.tsx'
 import type {User} from '../core/domain/user/user.types.ts'
-
-export const config: RouteConfig = {
-  skipInheritedLayouts: true, // Skip already inherited layouts
-}
 
 export default function Layout({Component, state}: PageProps) {
   const user = state.user as User | undefined

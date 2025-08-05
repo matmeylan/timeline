@@ -1,9 +1,9 @@
 import {useRef} from 'preact/hooks'
 import {Container} from './Container.tsx'
 import {clsx} from '@nick/clsx'
-import {JSX} from 'preact'
+import {JSX, ComponentChildren} from 'preact'
 import {asset} from '$fresh/runtime.ts'
-import {home, userHome, login, signup, startJournal, settingsProfile} from '../core/route/routes.ts'
+import {home, userHome, signup, startJournal, settingsProfile, logout, settingsSecurity} from '../core/route/routes.ts'
 import type {User} from '../core/domain/user/user.types.ts'
 
 export function Header({user}: {user: User | undefined}) {
@@ -90,23 +90,23 @@ function Avatar({
 
 function DesktopNavigation(props: JSX.IntrinsicElements['nav'] & {user: User | undefined}) {
   const user = props.user
-  const start = user ? startJournal(user.username) : signup
   return (
     <nav {...props}>
       <ul class="flex rounded-full bg-white/90 px-3 text-sm font-medium text-zinc-800 shadow-lg ring-1 shadow-zinc-800/5 ring-zinc-900/5 backdrop-blur-sm dark:bg-zinc-800/90 dark:text-zinc-200 dark:ring-white/10">
         <NavItem href={home}>Home</NavItem>
-        <NavItem href={start}>Start</NavItem>
+        {!user && <NavItem href={signup}>Start</NavItem>}
         {user && <NavItem href={userHome(user.username)}>Journals</NavItem>}
-        {user && <NavItem href={settingsProfile}>Settings</NavItem>}
+        {user && <UserDropdown user={user} />}
       </ul>
     </nav>
   )
 }
 
-function NavItem({href, children}: {href: string; children: string | JSX.Element}) {
+function NavItem({href, children}: {href?: string; children: ComponentChildren}) {
+  const Item: JSX.ElementType = href ? 'a' : 'button'
   return (
     <li>
-      <a
+      <Item
         href={href}
         class={clsx(
           'group relative block px-3 py-2 transition',
@@ -123,7 +123,7 @@ function NavItem({href, children}: {href: string; children: string | JSX.Element
             'bg-linear-to-r from-teal-500/0 via-teal-500/40 to-teal-500/0 dark:from-teal-400/0 dark:via-teal-400/40 dark:to-teal-400/0',
           )}
         />
-      </a>
+      </Item>
     </li>
   )
 }
@@ -186,5 +186,66 @@ function MoonIcon(props: JSX.IntrinsicElements['svg']) {
         strokeLinejoin="round"
       />
     </svg>
+  )
+}
+
+function UserDropdown({user}: {user: User}) {
+  return (
+    <el-dropdown class="inline-block">
+      <NavItem>
+        <div class="inline-flex items-center">
+          @{user.username}
+          <svg
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            data-slot="icon"
+            aria-hidden="true"
+            class="-mr-1 inline size-5 hover:text-teal-500"
+          >
+            <path
+              d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+              clip-rule="evenodd"
+              fill-rule="evenodd"
+            />
+          </svg>
+        </div>
+      </NavItem>
+
+      <el-menu
+        anchor="bottom end"
+        popover
+        className="w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 transition transition-discrete [--anchor-gap:--spacing(2)] focus:outline-hidden data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
+      >
+        <div class="px-4 py-3">
+          <p class="text-xs/6 text-gray-600">Signed in as</p>
+          <p class="truncate text-sm font-medium text-gray-900">{user.email}</p>
+        </div>
+        <div>
+          <UserDropdownItem href={startJournal(user.username)}>Start a journal</UserDropdownItem>
+          <UserDropdownItem href={userHome(user.username)}>Journals</UserDropdownItem>
+        </div>
+        <div class="py-1">
+          <UserDropdownItem href={settingsProfile}>Profile</UserDropdownItem>
+          <UserDropdownItem href={settingsSecurity}>Security</UserDropdownItem>
+          <UserDropdownItem href={logout} class="w-full text-left">
+            Sign out
+          </UserDropdownItem>
+        </div>
+      </el-menu>
+    </el-dropdown>
+  )
+}
+
+function UserDropdownItem({class: classes, children, ...props}: JSX.HTMLAttributes<HTMLAnchorElement>) {
+  return (
+    <a
+      class={clsx(
+        classes,
+        'block px-4 py-2 text-sm text-gray-700 focus:bg-gray-100 focus:text-gray-900 focus:outline-hidden',
+      )}
+      {...props}
+    >
+      {children}
+    </a>
   )
 }

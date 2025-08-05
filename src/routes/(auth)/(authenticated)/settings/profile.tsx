@@ -30,7 +30,7 @@ export default function ProfileSettingsPage(props: PageProps<ProfileState>) {
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700">Username</label>
           <div class="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900">
-            {user.username}
+            @{user.username}
           </div>
         </div>
         <div>
